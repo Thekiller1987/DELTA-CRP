@@ -20,8 +20,55 @@
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
+    <!-- ================================================================= -->
+    <!-- PANTALLA DE INICIO DE SESIÓN REAL — DELTASTORE CRM & ERP -->
+    <!-- ================================================================= -->
+    <div id="crm-auth-screen" class="crm-auth-screen" style="display:flex;">
+        <div class="auth-card-box">
+            <div class="auth-header">
+                <div class="auth-logo-icon">⚡</div>
+                <h1 class="auth-title">DELTA<span>STORE</span></h1>
+                <p class="auth-subtitle">SISTEMA ERP &bull; PUNTO DE VENTA &bull; INVENTARIO</p>
+                <div class="auth-badge">📍 Sede Central Juigalpa, Chontales</div>
+            </div>
 
-    <div class="crm-layout">
+            <div id="auth-error-alert" class="auth-error-alert" style="display:none;"></div>
+
+            <form id="crm-real-login-form" class="auth-form" autocomplete="on">
+                <div class="auth-form-group">
+                    <label for="login-email">Correo Electrónico</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">✉️</span>
+                        <input type="email" id="login-email" class="auth-input" placeholder="admin@deltastore.com" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="login-password">Contraseña</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">🔒</span>
+                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit-real-login" class="btn-auth-submit">
+                    <span>🔐</span> Iniciar Sesión en el ERP
+                </button>
+            </form>
+
+            <div class="auth-footer-info">
+                <div style="font-size:0.75rem; color:#64748b;">
+                    🛡️ Autenticación Cifrada Bcrypt &bull; Token JWT &bull; MySQL deltastore_db
+                </div>
+                <div style="font-size:0.72rem; color:#94a3b8; margin-top:6px;">
+                    Usuario Administrador: <code>admin@deltastore.com</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="crm-layout" id="crm-main-layout" style="display:none;">
         
         <!-- SIDEBAR ERP -->
         <aside class="crm-sidebar">
@@ -319,29 +366,33 @@
                      ============================================================= -->
                 <div class="crm-tab-view" id="tab-inventory">
                     <div class="table-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
-                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:500px;">
-                                <input type="text" id="inv-search-input" class="form-control" placeholder="Buscar por código, nombre o modelo compatible...">
-                                <select id="inv-filter-cat" class="form-control" style="max-width:180px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:540px;">
+                                <input type="text" id="inv-search-input" class="form-control" placeholder="🔍 Buscar por código, nombre o modelo compatible...">
+                                <select id="inv-filter-cat" class="form-control" style="max-width:190px;">
                                     <option value="">Todas las Categorías</option>
                                 </select>
                             </div>
+                            <button type="button" id="btn-open-create-product-modal" class="btn-charge-pos" style="width:auto; padding:10px 20px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
+                                <span>➕</span> Registrar Nuevo Repuesto
+                            </button>
                         </div>
 
                         <table class="crm-table">
                             <thead>
                                 <tr>
+                                    <th style="width:60px;">Foto</th>
                                     <th>Código</th>
                                     <th>Nombre del Repuesto</th>
                                     <th>Categoría</th>
                                     <th>Compatibilidad</th>
                                     <th>Precio</th>
                                     <th>Stock</th>
-                                    <th>Acción</th>
+                                    <th style="text-align:center; min-width:140px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="inventory-table-body">
-                                <!-- Inyectado por crm.js -->
+                                <!-- Inyectado dinamicamente por crm.js -->
                             </tbody>
                         </table>
                     </div>
@@ -682,79 +733,7 @@
     <script src="/js/icons.js"></script>
     <script src="/js/crm.js"></script>
 
-    <!-- ================================================================= -->
-    <!-- MODAL DE AUTENTICACIÓN & CONMUTADOR DE ROL (RBAC) -->
-    <!-- ================================================================= -->
-    <div class="modal-backdrop" id="crm-login-modal">
-        <div class="modal-crm-login-box">
-            <div class="login-brand-header">
-                <div class="login-logo-badge">🛡️</div>
-                <h2>Control de Acceso & Seguridad RBAC</h2>
-                <p>Selecciona un rol de demostración o ingresa con credenciales de personal.</p>
-            </div>
-
-            <!-- Accesos Rápidos por Rol (1 Clic) -->
-            <div class="quick-role-picker">
-                <h4>Acceso Rápido por Rol (Demostración de Privilegios):</h4>
-                <div class="quick-role-buttons-grid">
-                    <button class="btn-quick-role role-admin" data-email="admin@deltastore.com" data-pass="admin123">
-                        <span class="qr-icon">👑</span>
-                        <div class="qr-text">
-                            <strong>Super Admin</strong>
-                            <small>Acceso Total</small>
-                        </div>
-                    </button>
-                    <button class="btn-quick-role role-cajero" data-email="cajero@deltastore.com" data-pass="cajero123">
-                        <span class="qr-icon">💵</span>
-                        <div class="qr-text">
-                            <strong>Cajero POS</strong>
-                            <small>Solo Ventas</small>
-                        </div>
-                    </button>
-                    <button class="btn-quick-role role-bodeguero" data-email="bodega@deltastore.com" data-pass="bodega123">
-                        <span class="qr-icon">📦</span>
-                        <div class="qr-text">
-                            <strong>Bodeguero</strong>
-                            <small>Solo Stock</small>
-                        </div>
-                    </button>
-                    <button class="btn-quick-role role-repartidor" data-email="repartidor@deltastore.com" data-pass="moto123">
-                        <span class="qr-icon">🛵</span>
-                        <div class="qr-text">
-                            <strong>Motorizado</strong>
-                            <small>Solo Entregas</small>
-                        </div>
-                    </button>
-                    <button class="btn-quick-role role-vendedor" data-email="ventas@deltastore.com" data-pass="ventas123">
-                        <span class="qr-icon">💼</span>
-                        <div class="qr-text">
-                            <strong>Ventas</strong>
-                            <small>Pipeline Web</small>
-                        </div>
-                    </button>
-                </div>
-            </div>
-
-            <div class="login-divider">
-                <span>O ingresa con credenciales</span>
-            </div>
-
-            <!-- Formulario de Login Estándar -->
-            <form id="crm-login-form" class="crm-login-form">
-                <div class="form-group">
-                    <label>Correo Electrónico</label>
-                    <input type="email" id="login-email" class="form-input" placeholder="usuario@deltastore.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Contraseña Segura (Bcrypt)</label>
-                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-submit-order" id="btn-submit-login">
-                    <span>🔐</span> Iniciar Sesión con JWT
-                </button>
-            </form>
-        </div>
-    </div>
+    
 
     <!-- Modal para Agregar Nuevo Usuario (Admin) -->
     <div class="modal-backdrop" id="modal-add-user">
@@ -798,5 +777,127 @@
         </div>
     </div>
     
+
+    <!-- =====================================================================
+         MODAL: REGISTRAR / EDITAR REPUESTO EN MySQL (DELTASTORE_DB)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-product-crud">
+        <div class="modal-window" style="max-width: 660px; text-align: left;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.4rem;">📦</span>
+                    <div>
+                        <h3 id="product-modal-title" style="color:#ffffff; font-size:1.15rem; margin:0;">Registrar Nuevo Repuesto</h3>
+                        <span style="font-size:0.75rem; color:#00f2fe;">Base de Datos MySQL deltastore_db &bull; Publicación Inmediata</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" id="btn-close-product-crud">&times;</button>
+            </div>
+
+            <form id="form-product-crud" style="margin-top:14px;">
+                <input type="hidden" id="crud-product-id" value="">
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Código SKU / Parte *</label>
+                        <input type="text" id="crud-codigo" class="form-control" placeholder="Ej: REP-2026-001" required>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Nombre del Repuesto *</label>
+                        <input type="text" id="crud-nombre" class="form-control" placeholder="Ej: Pastillas de Freno Pulsar NS200" required>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Categoría *</label>
+                        <select id="crud-categoria" class="form-control" required>
+                            <!-- Llenado dinamicamente con categorias de MySQL -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Marca de Motocicleta</label>
+                        <select id="crud-marca" class="form-control">
+                            <!-- Llenado dinamicamente con marcas de MySQL -->
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Modelos Compatibles</label>
+                        <input type="text" id="crud-modelo" class="form-control" placeholder="Ej: Pulsar NS200 / Pulsar 180" value="Universal">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Color / Acabado</label>
+                        <input type="text" id="crud-color" class="form-control" placeholder="Ej: Negro Mate / Estándar" value="Estándar">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Precio Venta C$ *</label>
+                        <input type="number" id="crud-precio" class="form-control" step="0.50" min="0" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Precio Oferta C$</label>
+                        <input type="number" id="crud-precio-oferta" class="form-control" step="0.50" min="0" placeholder="Opcional">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock en Bodega *</label>
+                        <input type="number" id="crud-stock" class="form-control" min="0" value="10" required>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock Mínimo Alerta</label>
+                        <input type="number" id="crud-stock-minimo" class="form-control" min="1" value="5">
+                    </div>
+                    <div style="display:flex; align-items:center; padding-top:22px; gap:8px;">
+                        <input type="checkbox" id="crud-destacado" style="width:18px; height:18px; accent-color:#00f2fe; cursor:pointer;">
+                        <label for="crud-destacado" style="color:#ffffff; font-size:0.85rem; font-weight:700; cursor:pointer;">
+                            ⭐ Destacar en Portada Web
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Descripción Técnica / Detalles</label>
+                    <textarea id="crud-descripcion" class="form-control" rows="2" placeholder="Especificaciones, material, procedencia o notas técnicas..."></textarea>
+                </div>
+
+                <!-- Imagen del repuesto -->
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="color:#cbd5e1; font-size:0.82rem; font-weight:700;">📷 Fotografía del Repuesto</span>
+                        <small style="color:#94a3b8; font-size:0.75rem;">PNG, JPG, WEBP (Se almacena en BD deltastore_db)</small>
+                    </div>
+                    
+                    <div style="display:flex; gap:12px; align-items:center; margin-top:6px;">
+                        <div id="crud-preview-box" style="width:70px; height:70px; background:#070d19; border:1px dashed rgba(0,242,254,0.4); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                            <span id="crud-preview-placeholder" style="font-size:1.8rem; color:#64748b;">📷</span>
+                            <img id="crud-img-preview" src="" alt="Vista previa" style="display:none; width:100%; height:100%; object-fit:contain;">
+                        </div>
+                        <div style="flex:1;">
+                            <input type="file" id="crud-img-file" class="form-control" accept="image/*" style="padding:6px; font-size:0.8rem;">
+                            <input type="hidden" id="crud-imagen-base64" value="">
+                            <small style="color:#64748b; font-size:0.72rem; display:block; margin-top:4px;">
+                                La imagen aparecerá automáticamente en la Tienda Web DeltaStore y POS Mostrador.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-product-crud">Cancelar</button>
+                    <button type="submit" id="btn-save-product-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
+                        💾 Guardar Repuesto en MySQL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

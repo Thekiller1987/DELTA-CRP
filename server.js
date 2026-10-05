@@ -1,4 +1,15 @@
 require('dotenv').config();
+// -------------------------------------------------------------
+// DELTA-CRP Global Safety Shield (Crash Protection)
+// -------------------------------------------------------------
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🛡️ [DELTA-CRP Safety Shield] Unhandled Rejection intercepted:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('🛡️ [DELTA-CRP Safety Shield] Uncaught Exception intercepted:', err);
+});
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');

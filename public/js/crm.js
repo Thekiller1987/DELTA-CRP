@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupRBAC();
         setupNavigation();
         setupGlobalEvents();
+        switchTab('tab-dashboard');
         await loadCategoriesAndBrands();
         await refreshAllData();
         renderPOSProducts();
@@ -124,24 +125,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2.1 SISTEMA DE SEGURIDAD & CONTROL DE ROLES (RBAC)
     // -------------------------------------------------------------
     function setupRBAC() {
-        // Cargar sesión previa o inicializar con Admin por defecto
+        // Verificar sesión real
         let saved = null;
         try {
             saved = JSON.parse(localStorage.getItem('deltastore_crm_user'));
         } catch(e) { saved = null; }
 
+        const authScreen = document.getElementById('crm-auth-screen');
+        const mainLayout = document.getElementById('crm-main-layout');
+
         if (!saved || !saved.token) {
-            saved = {
-                id: 1,
-                nombre: 'Waskar Administrador',
-                email: 'admin@deltastore.com',
-                rol: 'admin',
-                token: 'mock_jwt_token_deltastore_admin'
-            };
-            localStorage.setItem('deltastore_crm_user', JSON.stringify(saved));
+            // NO autenticado -> Mostrar pantalla de login y ocultar dashboard
+            if (authScreen) authScreen.style.display = 'flex';
+            if (mainLayout) mainLayout.style.display = 'none';
+            crm.currentUser = null;
+            return;
         }
 
+        // Autenticado -> Mostrar dashboard
         crm.currentUser = saved;
+        if (authScreen) authScreen.style.display = 'none';
+        if (mainLayout) mainLayout.style.display = 'flex';
         updateUserSessionUI();
         applyRoleRestrictions();
 
@@ -160,7 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btnLogout.addEventListener('click', () => {
                 localStorage.removeItem('deltastore_crm_user');
                 crm.currentUser = null;
-                if (loginModal) loginModal.classList.add('open');
+                const authScreen = document.getElementById('crm-auth-screen');
+                const mainLayout = document.getElementById('crm-main-layout');
+                if (authScreen) authScreen.style.display = 'flex';
+                if (mainLayout) mainLayout.style.display = 'none';
+                const emailInp = document.getElementById('login-email');
+                const passInp = document.getElementById('login-password');
+                if (emailInp) emailInp.value = '';
+                if (passInp) passInp.value = '';
             });
         }
 
@@ -174,13 +185,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Formulario de login estándar
-        const loginForm = document.getElementById('crm-login-form');
+        const loginForm = document.getElementById('crm-real-login-form');
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value.trim();
                 const pass = document.getElementById('login-password').value.trim();
-                await performLogin(email, pass);
+                const btnSubmit = document.getElementById('btn-submit-real-login');
+                const errBox = document.getElementById('auth-error-alert');
+
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span>⏳</span> Verificando credenciales...';
+                if (errBox) errBox.style.display = 'none';
+
+                try {
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password: pass })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success && data.token) {
+                        crm.currentUser = {
+                            id: data.user.id,
+                            nombre: data.user.nombre,
+                            email: data.user.email,
+                            rol: data.user.rol,
+                            token: data.token
+                        };
+                        localStorage.setItem('deltastore_crm_user', JSON.stringify(crm.currentUser));
+
+                        const authScreen = document.getElementById('crm-auth-screen');
+                        const mainLayout = document.getElementById('crm-main-layout');
+                        if (authScreen) authScreen.style.display = 'none';
+                        if (mainLayout) mainLayout.style.display = 'flex';
+
+                        updateUserSessionUI();
+                        applyRoleRestrictions();
+                        await refreshAllData();
+                        if (window.soundEngine) window.soundEngine.playSuccess();
+                    } else {
+                        if (errBox) {
+                            errBox.textContent = data.message || 'Credenciales incorrectas. Verifique correo y contraseña.';
+                            errBox.style.display = 'block';
+                        }
+                    }
+                } catch (err) {
+                    if (errBox) {
+                        errBox.textContent = 'Error de conexión con el servidor.';
+                        errBox.style.display = 'block';
+                    }
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<span>🔐</span> Iniciar Sesión en el ERP';
+                }
             });
         }
 
@@ -1009,7 +1067,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        crm.products.forEach(p => {
+        const searchVal = (document.getElementById('inv-search-input')?.value || '').toLowerCase().trim();
+        const catVal = document.getElementById('inv-filter-cat')?.value || '';
+
+        const filtered = crm.products.filter(p => {
+            if (catVal && String(p.categoria_id) !== String(catVal)) return false;
+            if (searchVal) {
+                const matchName = (p.nombre || '').toLowerCase().includes(searchVal);
+                const matchCode = (p.codigo || '').toLowerCase().includes(searchVal);
+                const matchModel = (p.modelo_compatible || '').toLowerCase().includes(searchVal);
+                return matchName || matchCode || matchModel;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:36px; color:#64748b;">
+                        <div style="font-size:2rem; margin-bottom:8px;">📦</div>
+                        <div style="font-weight:700; color:#ffffff; margin-bottom:4px;">No hay repuestos registrados</div>
+                        <small>Haz clic en "➕ Registrar Nuevo Repuesto" para agregar tu primer producto a la base de datos real.</small>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filtered.forEach(p => {
             const tr = document.createElement('tr');
             const price = Number(p.precio_oferta || p.precio || 0);
 
@@ -1023,15 +1108,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 stockLabel = `Crítico (${p.stock})`;
             }
 
+            const hasImg = p.imagen_base64 && p.imagen_base64.startsWith('data:image');
+            const thumbHtml = hasImg 
+                ? `<div class="prod-thumb-mini"><img src="${p.imagen_base64}" alt="${p.nombre}"></div>`
+                : `<div class="prod-thumb-mini" style="font-size:1.2rem; color:#64748b;">🏍️</div>`;
+
             tr.innerHTML = `
+                <td>${thumbHtml}</td>
                 <td><strong style="color:#00f2fe;">${p.codigo || 'REP'}</strong></td>
-                <td><strong>${p.nombre}</strong></td>
+                <td>
+                    <strong style="color:#ffffff;">${p.nombre}</strong>
+                    ${p.destacado ? '<span style="font-size:0.7rem; color:#f59e0b; margin-left:6px;">⭐ Destacado</span>' : ''}
+                </td>
                 <td>${p.categoria_nombre || 'General'}</td>
                 <td>${p.modelo_compatible || 'Universal'}</td>
-                <td><strong style="color:#f59e0b;">C$ ${price.toFixed(2)}</strong></td>
-                <td><span class="stock-pill ${stockClass}">${stockLabel}</span></td>
                 <td>
-                    <button class="btn-topbar" onclick="window.crmAdjustStock(${p.id})">Ajustar</button>
+                    <strong style="color:#f59e0b;">C$ ${price.toFixed(2)}</strong>
+                    ${p.precio_oferta ? `<br><small style="color:#64748b; text-decoration:line-through;">C$ ${Number(p.precio).toFixed(2)}</small>` : ''}
+                </td>
+                <td><span class="stock-pill ${stockClass}">${stockLabel}</span></td>
+                <td style="text-align:center;">
+                    <div style="display:inline-flex; gap:4px;">
+                        <button class="btn-table-action" onclick="window.crmEditProduct(${p.id})" title="Editar repuesto">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn-table-action" onclick="window.crmAdjustStock(${p.id})" title="Ajustar existencias">
+                            📦 Stock
+                        </button>
+                        <button class="btn-table-action btn-del" onclick="window.crmDeleteProduct(${p.id})" title="Eliminar repuesto">
+                            🗑️
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1377,3 +1484,266 @@ document.addEventListener('DOMContentLoaded', () => {
             modalRec.classList.add('open');
         });
     }
+
+
+    // =============================================================
+    // MODULO DE CRUD DE PRODUCTOS REALES (MySQL deltastore_db)
+    // =============================================================
+    const btnOpenNewProduct = document.getElementById('btn-open-create-product-modal');
+    const modalProductCrud = document.getElementById('modal-product-crud');
+    const btnCloseProductCrud = document.getElementById('btn-close-product-crud');
+    const btnCancelProductCrud = document.getElementById('btn-cancel-product-crud');
+    const formProductCrud = document.getElementById('form-product-crud');
+
+    const crudImgFile = document.getElementById('crud-img-file');
+    const crudImgBase64 = document.getElementById('crud-imagen-base64');
+    const crudImgPreview = document.getElementById('crud-img-preview');
+    const crudPreviewPlaceholder = document.getElementById('crud-preview-placeholder');
+
+    // Filtros en vivo del inventario
+    const invSearchInput = document.getElementById('inv-search-input');
+    const invFilterCat = document.getElementById('inv-filter-cat');
+
+    if (invSearchInput) {
+        invSearchInput.addEventListener('input', () => renderInventoryTable());
+    }
+    if (invFilterCat) {
+        invFilterCat.addEventListener('change', () => renderInventoryTable());
+    }
+
+    // Apertura para Nuevo Repuesto
+    if (btnOpenNewProduct && modalProductCrud) {
+        btnOpenNewProduct.addEventListener('click', () => {
+            openProductCrudModal();
+        });
+    }
+
+    if (btnCloseProductCrud && modalProductCrud) {
+        btnCloseProductCrud.addEventListener('click', () => {
+            modalProductCrud.classList.remove('open');
+        });
+    }
+
+    if (btnCancelProductCrud && modalProductCrud) {
+        btnCancelProductCrud.addEventListener('click', () => {
+            modalProductCrud.classList.remove('open');
+        });
+    }
+
+    // Convertidor de Imagen a Base64 con Preview instantaneo
+    if (crudImgFile) {
+        crudImgFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validacion de tamano (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('La imagen es demasiado pesada. Elige una imagen menor a 10MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target.result;
+                if (crudImgBase64) crudImgBase64.value = base64;
+                if (crudImgPreview) {
+                    crudImgPreview.src = base64;
+                    crudImgPreview.style.display = 'block';
+                }
+                if (crudPreviewPlaceholder) crudPreviewPlaceholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function openProductCrudModal(product = null) {
+        if (!modalProductCrud) return;
+
+        const titleEl = document.getElementById('product-modal-title');
+        const idInp = document.getElementById('crud-product-id');
+        const codeInp = document.getElementById('crud-codigo');
+        const nameInp = document.getElementById('crud-nombre');
+        const catSelect = document.getElementById('crud-categoria');
+        const brandSelect = document.getElementById('crud-marca');
+        const modelInp = document.getElementById('crud-modelo');
+        const colorInp = document.getElementById('crud-color');
+        const priceInp = document.getElementById('crud-precio');
+        const offerInp = document.getElementById('crud-precio-oferta');
+        const stockInp = document.getElementById('crud-stock');
+        const minStockInp = document.getElementById('crud-stock-minimo');
+        const descInp = document.getElementById('crud-descripcion');
+        const destCheck = document.getElementById('crud-destacado');
+
+        // Limpiar preview de imagen
+        if (crudImgFile) crudImgFile.value = '';
+        if (crudImgBase64) crudImgBase64.value = '';
+        if (crudImgPreview) {
+            crudImgPreview.src = '';
+            crudImgPreview.style.display = 'none';
+        }
+        if (crudPreviewPlaceholder) crudPreviewPlaceholder.style.display = 'block';
+
+        if (product) {
+            // MODO EDICION
+            if (titleEl) titleEl.textContent = `✏️ Editar: ${product.nombre}`;
+            if (idInp) idInp.value = product.id;
+            if (codeInp) codeInp.value = product.codigo || '';
+            if (nameInp) nameInp.value = product.nombre || '';
+            if (catSelect) catSelect.value = product.categoria_id || '';
+            if (brandSelect) brandSelect.value = product.marca_moto_id || '';
+            if (modelInp) modelInp.value = product.modelo_compatible || 'Universal';
+            if (colorInp) colorInp.value = product.color || 'Estándar';
+            if (priceInp) priceInp.value = product.precio || '';
+            if (offerInp) offerInp.value = product.precio_oferta || '';
+            if (stockInp) stockInp.value = product.stock !== undefined ? product.stock : 10;
+            if (minStockInp) minStockInp.value = product.stock_minimo || 5;
+            if (descInp) descInp.value = product.descripcion || '';
+            if (destCheck) destCheck.checked = Boolean(product.destacado);
+
+            if (product.imagen_base64 && product.imagen_base64.startsWith('data:image')) {
+                if (crudImgBase64) crudImgBase64.value = product.imagen_base64;
+                if (crudImgPreview) {
+                    crudImgPreview.src = product.imagen_base64;
+                    crudImgPreview.style.display = 'block';
+                }
+                if (crudPreviewPlaceholder) crudPreviewPlaceholder.style.display = 'none';
+            }
+        } else {
+            // MODO CREACION
+            if (titleEl) titleEl.textContent = '📦 Registrar Nuevo Repuesto';
+            if (idInp) idInp.value = '';
+            if (codeInp) {
+                const rnd = Math.floor(100 + Math.random() * 900);
+                codeInp.value = `REP-${new Date().getFullYear()}-${rnd}`;
+            }
+            if (nameInp) nameInp.value = '';
+            if (catSelect && catSelect.options.length > 1) catSelect.selectedIndex = 1;
+            if (brandSelect) brandSelect.value = '';
+            if (modelInp) modelInp.value = 'Universal';
+            if (colorInp) colorInp.value = 'Estándar';
+            if (priceInp) priceInp.value = '';
+            if (offerInp) offerInp.value = '';
+            if (stockInp) stockInp.value = '10';
+            if (minStockInp) minStockInp.value = '5';
+            if (descInp) descInp.value = '';
+            if (destCheck) destCheck.checked = false;
+        }
+
+        modalProductCrud.classList.add('open');
+    }
+
+    // Submit del Formulario Crear / Editar Repuesto
+    if (formProductCrud) {
+        formProductCrud.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const pId = document.getElementById('crud-product-id')?.value;
+            const codigo = document.getElementById('crud-codigo')?.value.trim();
+            const nombre = document.getElementById('crud-nombre')?.value.trim();
+            const categoria_id = document.getElementById('crud-categoria')?.value;
+            const marca_moto_id = document.getElementById('crud-marca')?.value || null;
+            const modelo_compatible = document.getElementById('crud-modelo')?.value.trim() || 'Universal';
+            const color = document.getElementById('crud-color')?.value.trim() || 'Estándar';
+            const precio = parseFloat(document.getElementById('crud-precio')?.value);
+            const precio_oferta_val = document.getElementById('crud-precio-oferta')?.value;
+            const precio_oferta = precio_oferta_val ? parseFloat(precio_oferta_val) : null;
+            const stock = parseInt(document.getElementById('crud-stock')?.value || 0);
+            const stock_minimo = parseInt(document.getElementById('crud-stock-minimo')?.value || 5);
+            const descripcion = document.getElementById('crud-descripcion')?.value.trim() || '';
+            const destacado = document.getElementById('crud-destacado')?.checked || false;
+            const imagen_base64 = document.getElementById('crud-imagen-base64')?.value || null;
+
+            if (!codigo || !nombre || !categoria_id || isNaN(precio) || precio <= 0) {
+                alert('Por favor completa todos los campos requeridos (*)');
+                return;
+            }
+
+            const btnSave = document.getElementById('btn-save-product-crud');
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.textContent = '⏳ Guardando en MySQL...';
+            }
+
+            const payload = {
+                codigo,
+                nombre,
+                categoria_id: parseInt(categoria_id),
+                marca_moto_id: marca_moto_id ? parseInt(marca_moto_id) : null,
+                modelo_compatible,
+                color,
+                precio,
+                precio_oferta,
+                stock,
+                stock_minimo,
+                descripcion,
+                destacado,
+                imagen_base64
+            };
+
+            try {
+                let res;
+                if (pId) {
+                    // Actualizar existente
+                    res = await fetch(`/api/crm/products/${pId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // Crear nuevo
+                    res = await fetch('/api/crm/products', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                const data = await res.json();
+                if (data.success || res.ok) {
+                    if (window.soundEngine) window.soundEngine.playSuccess();
+                    if (modalProductCrud) modalProductCrud.classList.remove('open');
+                    await refreshAllData();
+                    renderPOSProducts();
+                    alert(pId ? '✅ Repuesto actualizado con éxito.' : '✅ Repuesto registrado en MySQL y disponible en Tienda Web.');
+                } else {
+                    alert('Error al guardar: ' + (data.error || data.message || 'Verifica los datos.'));
+                }
+            } catch (err) {
+                console.error('Error guardando repuesto:', err);
+                alert('Error de conexión con el servidor al guardar el repuesto.');
+            } finally {
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.textContent = '💾 Guardar Repuesto en MySQL';
+                }
+            }
+        });
+    }
+
+    // Funciones globales expuestas para las acciones de la tabla
+    window.crmEditProduct = function(id) {
+        const prod = crm.products.find(p => p.id === id);
+        if (prod) openProductCrudModal(prod);
+    };
+
+    window.crmDeleteProduct = async function(id) {
+        const prod = crm.products.find(p => p.id === id);
+        if (!prod) return;
+
+        const conf = confirm(`¿Estás seguro de eliminar "${prod.nombre}" (${prod.codigo}) del catálogo?\nEsta acción lo desactivará de la Tienda Web y del POS.`);
+        if (!conf) return;
+
+        try {
+            const res = await fetch(`/api/crm/products/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                if (window.soundEngine) window.soundEngine.playSuccess();
+                await refreshAllData();
+                renderPOSProducts();
+            } else {
+                alert('No se pudo desactivar el repuesto.');
+            }
+        } catch (e) {
+            console.error('Error eliminando repuesto:', e);
+            alert('Fallo de conexión al eliminar repuesto.');
+        }
+    };

@@ -971,3 +971,294 @@ h1, h2, h3, h4, h5, .brand-font {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ==========================================================================
+   PANTALLA DE INICIO DE SESIÓN REAL & SEGURIDAD EXCLUSIVA
+   ========================================================================== */
+.crm-auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: radial-gradient(circle at 50% 20%, #0d1527 0%, #050811 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.auth-card-box {
+    background: rgba(12, 20, 36, 0.95);
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    border-radius: 16px;
+    max-width: 440px;
+    width: 100%;
+    padding: 36px 32px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 242, 254, 0.15);
+    backdrop-filter: blur(16px);
+    text-align: center;
+    animation: authFadeIn 0.35s ease;
+}
+
+@keyframes authFadeIn {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-logo-icon {
+    font-size: 2.8rem;
+    margin-bottom: 8px;
+    display: inline-block;
+    filter: drop-shadow(0 0 16px #00f2fe);
+}
+
+.auth-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.auth-title span {
+    color: #00f2fe;
+    text-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
+}
+
+.auth-subtitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #94a3b8;
+    margin: 4px 0 12px 0;
+}
+
+.auth-badge {
+    display: inline-block;
+    background: rgba(0, 242, 254, 0.1);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    color: #00f2fe;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+}
+
+.auth-error-alert {
+    background: rgba(244, 63, 94, 0.15);
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.auth-form-group {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.auth-form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+
+.auth-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-input-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    background: #070b14;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #00f2fe;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.3);
+    background: #090e1a;
+}
+
+.btn-auth-submit {
+    width: 100%;
+    padding: 13px;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #00f2fe 0%, #0284c7 100%);
+    color: #040914;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+}
+
+.btn-auth-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 242, 254, 0.5);
+    filter: brightness(1.1);
+}
+
+
+/* ==========================================================================
+   SISTEMA DE MODALES OVERLAY & ACCIONES CRUD CRM
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.open {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+.modal-window {
+    background: #0c1426;
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(0, 242, 254, 0.12);
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.btn-close-modal {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: #f43f5e;
+    color: #f43f5e;
+}
+
+.prod-thumb-mini {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #070d19;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.prod-thumb-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.btn-table-action {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #cbd5e1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-table-action:hover {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: #00f2fe;
+    color: #00f2fe;
+}
+
+.btn-table-action.btn-del:hover {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: #f43f5e;
+    color: #f43f5e;
+}
+
+
+/* Pestañas del CRM (Tab Views) */
+.crm-tab-view {
+    display: none !important;
+}
+
+.crm-tab-view.active {
+    display: block !important;
+    animation: fadeInTab 0.22s ease forwards;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
