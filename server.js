@@ -29,6 +29,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ONLINE',
         system: 'DELTA-CRP Enterprise (CRM, ERP, POS & MySQL)',
+        store_city: process.env.STORE_CITY || 'Juigalpa, Chontales',
         sede: process.env.STORE_CITY || 'Juigalpa, Chontales',
         port: PORT,
         database: process.env.DB_NAME || 'deltastore_db',

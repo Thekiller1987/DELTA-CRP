@@ -1,0 +1,17 @@
+{
+  "name": "DELTA-CRP | Sistema POS & ERP Juigalpa",
+  "short_name": "DELTA-CRP",
+  "description": "Punto de Venta Mostrador, Facturación 80mm, Control de Inventario y Despacho Motorizado Juigalpa.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080e1a",
+  "theme_color": "#00f2fe",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
