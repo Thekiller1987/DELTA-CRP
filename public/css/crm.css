@@ -1262,3 +1262,99 @@ h1, h2, h3, h4, h5, .brand-font {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ==========================================================================
+   DISEÑO RESPONSIVO ULTRA ADAPTABLE (MÓVILES, TABLETS & 400PX)
+   ========================================================================== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+    .crm-layout {
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+
+    .crm-sidebar {
+        width: 100% !important;
+        position: relative !important;
+        height: auto !important;
+        border-right: none !important;
+        border-bottom: 2px solid var(--border-cyan) !important;
+        padding: 12px 14px !important;
+    }
+
+    .sidebar-brand-box {
+        margin-bottom: 8px !important;
+    }
+
+    .sidebar-nav {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        padding: 6px 0 !important;
+    }
+
+    .sidebar-nav-item {
+        flex: 1 1 calc(50% - 6px) !important;
+        padding: 8px 10px !important;
+        font-size: 0.78rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .nav-section-title {
+        display: none !important;
+    }
+
+    .sidebar-footer {
+        display: none !important;
+    }
+
+    .crm-main {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    .crm-topbar {
+        padding: 10px 14px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .topbar-right {
+        width: 100% !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .crm-container {
+        padding: 12px 10px !important;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .dashboard-grid-2 {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .pos-layout {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+
+    .modal-window {
+        padding: 16px !important;
+        max-width: 95vw !important;
+    }
+}

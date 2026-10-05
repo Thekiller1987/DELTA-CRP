@@ -40,11 +40,26 @@
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
+                        <nav class="sidebar-nav">
                 <div class="nav-section-title">ADMINISTRACIÓN JUIGALPA</div>
                 <button class="sidebar-nav-item active" data-tab="tab-dashboard">
                     <span>📊</span> Dashboard Ejecutivo
                 </button>
+                <button class="sidebar-nav-item" data-tab="tab-inventory">
+                    <span>📦</span> Productos & Inventario
+                    <span class="nav-badge" id="stock-alert-badge" style="background:#f59e0b;">0</span>
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-categories">
+                    <span>🏷️</span> Categorías de Repuesto
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-suppliers">
+                    <span>🏭</span> Proveedores de Moto
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-customers">
+                    <span>👥</span> Directorio de Clientes
+                </button>
+
+                <div class="nav-section-title">VENTAS & CAJA</div>
                 <button class="sidebar-nav-item" data-tab="tab-orders">
                     <span>🛵</span> Pipeline Pedidos
                     <span class="nav-badge" id="orders-badge-count">0</span>
@@ -52,19 +67,10 @@
                 <button class="sidebar-nav-item" data-tab="tab-pos">
                     <span>🛒</span> POS Mostrador Físico
                 </button>
-                <button class="sidebar-nav-item" data-tab="tab-inventory">
-                    <span>📦</span> Inventario & Stock
-                    <span class="nav-badge" id="stock-alert-badge" style="background:#f59e0b;">0</span>
-                </button>
-
-                <div class="nav-section-title">VENTAS & CLIENTES</div>
-                <button class="sidebar-nav-item" data-tab="tab-customers">
-                    <span>👥</span> Directorio Clientes
-                </button>
                 <button class="sidebar-nav-item" data-tab="tab-reports">
                     <span>📈</span> Reportes Financieros
                 </button>
-            
+
                 <div class="nav-section-title">SEGURIDAD & CONTROL</div>
                 <button class="sidebar-nav-item" data-tab="tab-rbac" id="nav-btn-rbac">
                     <span>🛡️</span> Control de Roles (RBAC)
@@ -324,13 +330,20 @@
                 <!-- =============================================================
                      TAB 4: INVENTARIO & CATALOGO
                      ============================================================= -->
+                
+                <!-- =============================================================
+                     TAB 2: PRODUCTOS & INVENTARIO (CRUD COMPLETO)
+                     ============================================================= -->
                 <div class="crm-tab-view" id="tab-inventory">
                     <div class="table-card">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
-                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:540px;">
-                                <input type="text" id="inv-search-input" class="form-control" placeholder="🔍 Buscar por código, nombre o modelo compatible...">
-                                <select id="inv-filter-cat" class="form-control" style="max-width:190px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:650px; flex-wrap:wrap;">
+                                <input type="text" id="inv-search-input" class="form-control" placeholder="🔍 Buscar por código, repuesto o compatibilidad..." style="min-width:220px; flex:1;">
+                                <select id="inv-filter-cat" class="form-control" style="max-width:180px;">
                                     <option value="">Todas las Categorías</option>
+                                </select>
+                                <select id="inv-filter-sup" class="form-control" style="max-width:180px;">
+                                    <option value="">Todos los Proveedores</option>
                                 </select>
                             </div>
                             <button type="button" id="btn-open-create-product-modal" class="btn-charge-pos" style="width:auto; padding:10px 20px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
@@ -338,53 +351,136 @@
                             </button>
                         </div>
 
-                        <table class="crm-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:60px;">Foto</th>
-                                    <th>Código</th>
-                                    <th>Nombre del Repuesto</th>
-                                    <th>Categoría</th>
-                                    <th>Compatibilidad</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th style="text-align:center; min-width:140px;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body">
-                                <!-- Inyectado dinamicamente por crm.js -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="crm-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px;">Foto</th>
+                                        <th>Código</th>
+                                        <th>Nombre del Repuesto</th>
+                                        <th>Categoría</th>
+                                        <th>Proveedor</th>
+                                        <th>Compatibilidad</th>
+                                        <th>Costo C$</th>
+                                        <th>Precio Venta</th>
+                                        <th>Stock</th>
+                                        <th style="text-align:center; min-width:140px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table-body">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- =============================================================
-                     TAB 5: DIRECTORIO DE CLIENTES
+                     TAB: CATEGORÍAS DE REPUESTO (CRUD COMPLETO)
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-categories">
+                    <div class="table-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:400px;">
+                                <input type="text" id="cat-search-input" class="form-control" placeholder="🔍 Buscar categoría por nombre o slug...">
+                            </div>
+                            <button type="button" id="btn-open-create-cat-modal" class="btn-charge-pos" style="width:auto; padding:10px 20px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
+                                <span>➕</span> Nueva Categoría
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="crm-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:60px;">Icono</th>
+                                        <th>Nombre de Categoría</th>
+                                        <th>Slug URL</th>
+                                        <th>Descripción</th>
+                                        <th>Repuestos Asociados</th>
+                                        <th style="text-align:center; width:130px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categories-table-body">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB: PROVEEDORES DE MOTO (CRUD COMPLETO)
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-suppliers">
+                    <div class="table-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:400px;">
+                                <input type="text" id="sup-search-input" class="form-control" placeholder="🔍 Buscar proveedor por nombre, RUC o contacto...">
+                            </div>
+                            <button type="button" id="btn-open-create-sup-modal" class="btn-charge-pos" style="width:auto; padding:10px 20px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
+                                <span>➕</span> Registrar Proveedor
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="crm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre Comercial</th>
+                                        <th>Contacto</th>
+                                        <th>RUC / Cédula</th>
+                                        <th>Teléfono</th>
+                                        <th>Ciudad / Sede</th>
+                                        <th>Repuestos Suministrados</th>
+                                        <th>WhatsApp</th>
+                                        <th style="text-align:center; width:130px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="suppliers-table-body">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB: DIRECTORIO DE CLIENTES (CRUD COMPLETO)
                      ============================================================= -->
                 <div class="crm-tab-view" id="tab-customers">
                     <div class="table-card">
-                        <h3 style="font-size:1.1rem; font-weight:800; color:#ffffff; margin-bottom:16px;">Directorio de Clientes Juigalpa</h3>
-                        <table class="crm-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Teléfono</th>
-                                    <th>Dirección Habitual</th>
-                                    <th>Total Pedidos</th>
-                                    <th>Total Gastado</th>
-                                    <th>WhatsApp</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customers-table-body">
-                                <!-- Inyectado por crm.js -->
-                            </tbody>
-                        </table>
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:400px;">
+                                <input type="text" id="cust-search-input" class="form-control" placeholder="🔍 Buscar cliente por nombre, teléfono o cédula...">
+                            </div>
+                            <button type="button" id="btn-open-create-cust-modal" class="btn-charge-pos" style="width:auto; padding:10px 20px; font-size:0.88rem; display:inline-flex; align-items:center; gap:8px;">
+                                <span>➕</span> Registrar Cliente
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="crm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre Completo</th>
+                                        <th>Teléfono</th>
+                                        <th>Cédula / RUC</th>
+                                        <th>Dirección / Juigalpa</th>
+                                        <th>Pedidos</th>
+                                        <th>Total Compras C$</th>
+                                        <th>WhatsApp</th>
+                                        <th style="text-align:center; width:130px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customers-table-body">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- =============================================================
-                     TAB 6: REPORTES DE VENTAS & EXPORTACION
-                     ============================================================= -->
                 <div class="crm-tab-view" id="tab-reports">
                     <div class="table-card">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -738,17 +834,30 @@
     </div>
     
 
+    
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-product-crud">Cancelar</button>
+                    <button type="submit" id="btn-save-product-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
+                        💾 Guardar Repuesto en MySQL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- =====================================================================
          MODAL: REGISTRAR / EDITAR REPUESTO EN MySQL (DELTASTORE_DB)
          ===================================================================== -->
     <div class="modal-overlay" id="modal-product-crud">
-        <div class="modal-window" style="max-width: 660px; text-align: left;">
+        <div class="modal-window" style="max-width: 680px; text-align: left;">
             <div class="modal-header">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="font-size:1.4rem;">📦</span>
                     <div>
                         <h3 id="product-modal-title" style="color:#ffffff; font-size:1.15rem; margin:0;">Registrar Nuevo Repuesto</h3>
-                        <span style="font-size:0.75rem; color:#00f2fe;">Base de Datos MySQL deltastore_db &bull; Publicación Inmediata</span>
+                        <span style="font-size:0.75rem; color:#00f2fe;">MySQL deltastore_db &bull; Publicación Inmediata</span>
                     </div>
                 </div>
                 <button type="button" class="btn-close-modal" id="btn-close-product-crud">&times;</button>
@@ -764,22 +873,24 @@
                     </div>
                     <div>
                         <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Nombre del Repuesto *</label>
-                        <input type="text" id="crud-nombre" class="form-control" placeholder="Ej: Pastillas de Freno Pulsar NS200" required>
+                        <input type="text" id="crud-nombre" class="form-control" placeholder="Ej: Kit Cilindro y Pistón Pulsar NS200" required>
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
                         <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Categoría *</label>
-                        <select id="crud-categoria" class="form-control" required>
-                            <!-- Llenado dinamicamente con categorias de MySQL -->
+                        <select id="crud-categoria" class="form-control" required></select>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Proveedor</label>
+                        <select id="crud-proveedor" class="form-control">
+                            <option value="">Sin proveedor asignado</option>
                         </select>
                     </div>
                     <div>
-                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Marca de Motocicleta</label>
-                        <select id="crud-marca" class="form-control">
-                            <!-- Llenado dinamicamente con marcas de MySQL -->
-                        </select>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Marca de Moto</label>
+                        <select id="crud-marca" class="form-control"></select>
                     </div>
                 </div>
 
@@ -794,7 +905,11 @@
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Costo Compra C$</label>
+                        <input type="number" id="crud-costo-compra" class="form-control" step="0.50" min="0" placeholder="0.00" value="0">
+                    </div>
                     <div>
                         <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Precio Venta C$ *</label>
                         <input type="number" id="crud-precio" class="form-control" step="0.50" min="0" placeholder="0.00" required>
@@ -804,14 +919,14 @@
                         <input type="number" id="crud-precio-oferta" class="form-control" step="0.50" min="0" placeholder="Opcional">
                     </div>
                     <div>
-                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock en Bodega *</label>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock Bodega *</label>
                         <input type="number" id="crud-stock" class="form-control" min="0" value="10" required>
                     </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
-                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock Mínimo Alerta</label>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Stock Mínimo (Alerta)</label>
                         <input type="number" id="crud-stock-minimo" class="form-control" min="1" value="5">
                     </div>
                     <div style="display:flex; align-items:center; padding-top:22px; gap:8px;">
@@ -827,15 +942,14 @@
                     <textarea id="crud-descripcion" class="form-control" rows="2" placeholder="Especificaciones, material, procedencia o notas técnicas..."></textarea>
                 </div>
 
-                <!-- Imagen del repuesto -->
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <span style="color:#cbd5e1; font-size:0.82rem; font-weight:700;">📷 Fotografía del Repuesto</span>
-                        <small style="color:#94a3b8; font-size:0.75rem;">PNG, JPG, WEBP (Se almacena en BD deltastore_db)</small>
+                        <small style="color:#94a3b8; font-size:0.75rem;">PNG, JPG, WEBP (Se almacena en BD)</small>
                     </div>
                     
                     <div style="display:flex; gap:12px; align-items:center; margin-top:6px;">
-                        <div id="crud-preview-box" style="width:70px; height:70px; background:#070d19; border:1px dashed rgba(0,242,254,0.4); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                        <div id="crud-preview-box" style="width:65px; height:65px; background:#070d19; border:1px dashed rgba(0,242,254,0.4); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
                             <span id="crud-preview-placeholder" style="font-size:1.8rem; color:#64748b;">📷</span>
                             <img id="crud-img-preview" src="" alt="Vista previa" style="display:none; width:100%; height:100%; object-fit:contain;">
                         </div>
@@ -843,7 +957,7 @@
                             <input type="file" id="crud-img-file" class="form-control" accept="image/*" style="padding:6px; font-size:0.8rem;">
                             <input type="hidden" id="crud-imagen-base64" value="">
                             <small style="color:#64748b; font-size:0.72rem; display:block; margin-top:4px;">
-                                La imagen aparecerá automáticamente en la Tienda Web DeltaStore y POS Mostrador.
+                                La imagen aparecerá automáticamente en la Tienda Web y POS Mostrador.
                             </small>
                         </div>
                     </div>
@@ -852,7 +966,201 @@
                 <div style="display:flex; justify-content:flex-end; gap:10px;">
                     <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-product-crud">Cancelar</button>
                     <button type="submit" id="btn-save-product-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
-                        💾 Guardar Repuesto en MySQL
+                        💾 Guardar Repuesto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: REGISTRAR / EDITAR CATEGORÍA
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-category-crud">
+        <div class="modal-window" style="max-width: 480px; text-align: left;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.4rem;">🏷️</span>
+                    <div>
+                        <h3 id="cat-modal-title" style="color:#ffffff; font-size:1.15rem; margin:0;">Nueva Categoría</h3>
+                        <span style="font-size:0.75rem; color:#00f2fe;">Clasificación de Inventario</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" id="btn-close-cat-crud">&times;</button>
+            </div>
+
+            <form id="form-cat-crud" style="margin-top:14px;">
+                <input type="hidden" id="crud-cat-id" value="">
+                
+                <div style="display:grid; grid-template-columns: 80px 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Icono</label>
+                        <input type="text" id="crud-cat-icono" class="form-control" value="🏍️" style="text-align:center; font-size:1.2rem;">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Nombre de Categoría *</label>
+                        <input type="text" id="crud-cat-nombre" class="form-control" placeholder="Ej: Sistema Eléctrico" required>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Slug URL (Opcional)</label>
+                    <input type="text" id="crud-cat-slug" class="form-control" placeholder="Ej: sistema-electrico">
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Descripción</label>
+                    <textarea id="crud-cat-desc" class="form-control" rows="2" placeholder="Detalles de repuestos contenidos..."></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-cat-crud">Cancelar</button>
+                    <button type="submit" id="btn-save-cat-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
+                        💾 Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: REGISTRAR / EDITAR PROVEEDOR
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-supplier-crud">
+        <div class="modal-window" style="max-width: 580px; text-align: left;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.4rem;">🏭</span>
+                    <div>
+                        <h3 id="sup-modal-title" style="color:#ffffff; font-size:1.15rem; margin:0;">Registrar Proveedor</h3>
+                        <span style="font-size:0.75rem; color:#00f2fe;">Cadena de Suministro de Repuestos</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" id="btn-close-sup-crud">&times;</button>
+            </div>
+
+            <form id="form-sup-crud" style="margin-top:14px;">
+                <input type="hidden" id="crud-sup-id" value="">
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Nombre Comercial *</label>
+                        <input type="text" id="crud-sup-nombre" class="form-control" placeholder="Ej: Motopartes Central Nicaragua" required>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">RUC / Cédula</label>
+                        <input type="text" id="crud-sup-ruc" class="form-control" placeholder="Ej: J0310000001234">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Persona de Contacto</label>
+                        <input type="text" id="crud-sup-contacto" class="form-control" placeholder="Ej: Ing. Jorge Rivas">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Teléfono Celular / WhatsApp</label>
+                        <input type="text" id="crud-sup-telefono" class="form-control" placeholder="Ej: +505 8888-1234">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Correo Electrónico</label>
+                        <input type="email" id="crud-sup-email" class="form-control" placeholder="ventas@proveedor.com">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Ciudad / Municipio</label>
+                        <input type="text" id="crud-sup-ciudad" class="form-control" value="Juigalpa">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Dirección / Bodega</label>
+                    <input type="text" id="crud-sup-direccion" class="form-control" placeholder="Ej: Km 139 Carretera a Managua, Juigalpa">
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Notas / Condiciones de Crédito</label>
+                    <textarea id="crud-sup-notas" class="form-control" rows="2" placeholder="Ej: Crédito a 15 días, descuento 5% por pronto pago..."></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-sup-crud">Cancelar</button>
+                    <button type="submit" id="btn-save-sup-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
+                        💾 Guardar Proveedor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: REGISTRAR / EDITAR CLIENTE
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-customer-crud">
+        <div class="modal-window" style="max-width: 560px; text-align: left;">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.4rem;">👥</span>
+                    <div>
+                        <h3 id="cust-modal-title" style="color:#ffffff; font-size:1.15rem; margin:0;">Registrar Cliente</h3>
+                        <span style="font-size:0.75rem; color:#00f2fe;">Directorio Comercial Juigalpa</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" id="btn-close-cust-crud">&times;</button>
+            </div>
+
+            <form id="form-cust-crud" style="margin-top:14px;">
+                <input type="hidden" id="crud-cust-id" value="">
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Nombre y Apellido *</label>
+                        <input type="text" id="crud-cust-nombre" class="form-control" placeholder="Ej: Denis Morales" required>
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Teléfono Celular *</label>
+                        <input type="text" id="crud-cust-telefono" class="form-control" placeholder="Ej: +505 8765-4321" required>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Cédula / RUC</label>
+                        <input type="text" id="crud-cust-cedula" class="form-control" placeholder="Ej: 121-140590-0002K">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Correo Electrónico</label>
+                        <input type="email" id="crud-cust-email" class="form-control" placeholder="cliente@correo.com">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Municipio</label>
+                        <input type="text" id="crud-cust-municipio" class="form-control" value="Juigalpa">
+                    </div>
+                    <div>
+                        <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Barrio / Sector</label>
+                        <input type="text" id="crud-cust-direccion" class="form-control" placeholder="Ej: Barrio Sandino, Costado Sur">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Punto de Referencia Exacto</label>
+                    <input type="text" id="crud-cust-referencia" class="form-control" placeholder="Ej: De la pulpería 2c al norte, casa esquinera color azul">
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="color:#cbd5e1; font-size:0.8rem; font-weight:700; display:block; margin-bottom:4px;">Notas del Cliente (Motos que posee, preferencias)</label>
+                    <textarea id="crud-cust-notas" class="form-control" rows="2" placeholder="Ej: Conduce Pulsar NS200 roja..."></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-topbar btn-close-modal" id="btn-cancel-cust-crud">Cancelar</button>
+                    <button type="submit" id="btn-save-cust-crud" class="btn-charge-pos" style="width:auto; padding:10px 22px;">
+                        💾 Guardar Cliente
                     </button>
                 </div>
             </form>
