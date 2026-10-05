@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeltaStore CRM & ERP | Software de Gestión y POS Juigalpa</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CRM Styles -->
+    <link rel="stylesheet" href="/css/crm.css">
+    <meta name="theme-color" content="#0c1424">
+</head>
+<body>
+
+    <div class="crm-layout">
+        
+        <!-- SIDEBAR ERP -->
+        <aside class="crm-sidebar">
+            <div class="sidebar-brand-box">
+                <div class="sidebar-logo-icon">⚡</div>
+                <div class="brand-titles">
+                    <h2>DELTA<span>STORE</span></h2>
+                    <p>SISTEMA ERP & POS</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">ADMINISTRACIÓN JUIGALPA</div>
+                <button class="sidebar-nav-item active" data-tab="tab-dashboard">
+                    <span>📊</span> Dashboard Ejecutivo
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-orders">
+                    <span>🛵</span> Pipeline Pedidos
+                    <span class="nav-badge" id="orders-badge-count">0</span>
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-pos">
+                    <span>🛒</span> POS Mostrador Físico
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-inventory">
+                    <span>📦</span> Inventario & Stock
+                    <span class="nav-badge" id="stock-alert-badge" style="background:#f59e0b;">0</span>
+                </button>
+
+                <div class="nav-section-title">VENTAS & CLIENTES</div>
+                <button class="sidebar-nav-item" data-tab="tab-customers">
+                    <span>👥</span> Directorio Clientes
+                </button>
+                <button class="sidebar-nav-item" data-tab="tab-reports">
+                    <span>📈</span> Reportes Financieros
+                </button>
+            
+                <div class="nav-section-title">SEGURIDAD & CONTROL</div>
+                <button class="sidebar-nav-item" data-tab="tab-rbac" id="nav-btn-rbac">
+                    <span>🛡️</span> Control de Roles (RBAC)
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-badge">
+                    <div class="user-avatar">W</div>
+                    <div class="user-meta">
+                        <h4>Waskar (Fundador)</h4>
+                        <p>Sede Central Juigalpa</p>
+                    </div>
+                </div>
+                <a href="/" target="_blank" class="btn-visit-store">
+                    <span>🌐</span> Ver Tienda en Línea ➔
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENEDOR PRINCIPAL -->
+        <main class="crm-main">
+            <!-- TOPBAR -->
+            <header class="crm-topbar">
+                <div class="topbar-left">
+                    <h1 class="view-title" id="current-view-title">Dashboard Ejecutivo & Ventas Juigalpa</h1>
+                    <span class="branch-tag">📍 Sucursal Juigalpa, Chontales</span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-topbar" id="crm-sound-toggle">🔊 Sonido POS</button>
+                    <div style="font-size:0.75rem; color:#10b981; display:flex; align-items:center; gap:6px; background:rgba(16,185,129,0.1); padding:5px 12px; border-radius:999px; border:1px solid rgba(16,185,129,0.3);">
+                        <span style="width:7px; height:7px; background:#10b981; border-radius:50%; display:inline-block;"></span>
+                        MySQL deltastore_db Online
+                    </div>
+                    <button class="btn-topbar btn-refresh-data" id="btn-global-refresh">
+                        🔄 Actualizar
+                    </button>
+                
+                    <!-- Widget de Sesión y Control de Roles RBAC -->
+                    <div class="crm-user-session-widget" id="crm-user-session-widget">
+                        <div class="user-role-avatar" id="current-user-avatar">👑</div>
+                        <div class="user-role-info">
+                            <span class="current-user-name" id="current-user-name">Waskar Administrador</span>
+                            <span class="current-user-role-badge role-admin" id="current-user-role-badge">Super Administrador</span>
+                        </div>
+                        <button class="btn-switch-role" id="btn-open-role-switcher" title="Cambiar de Rol / Usuario">⇄ Rol</button>
+                        <button class="btn-crm-logout" id="btn-crm-logout" title="Cerrar Sesión">✕ Salir</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="crm-container">
+
+                <!-- =============================================================
+                     TAB 1: DASHBOARD
+                     ============================================================= -->
+                <div class="crm-tab-view active" id="tab-dashboard">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-sales">💵</div>
+                            <div class="kpi-data">
+                                <p>Ventas de Hoy</p>
+                                <h3 id="kpi-sales-today">C$ 0.00</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-month">📅</div>
+                            <div class="kpi-data">
+                                <p>Ventas del Mes</p>
+                                <h3 id="kpi-sales-month">C$ 0.00</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-orders">🛵</div>
+                            <div class="kpi-data">
+                                <p>Pedidos por Despachar</p>
+                                <h3 id="kpi-pending-orders">0</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-stock">⚠️</div>
+                            <div class="kpi-data">
+                                <p>Stock Crítico</p>
+                                <h3 id="kpi-critical-stock">0</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-inventory">📦</div>
+                            <div class="kpi-data">
+                                <p>Valor Inventario</p>
+                                <h3 id="kpi-inventory-value">C$ 0.00</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico 7 Días & Top Productos -->
+                    <div class="dashboard-grid-2">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Tendencia de Ventas (Últimos 7 Días)</h3>
+                                <span style="font-size:0.75rem; color:#00f2fe;">Moneda: Córdobas (NIO)</span>
+                            </div>
+                            <div class="svg-chart-container" id="trend-chart-box">
+                                <!-- SVG Chart generado por crm.js -->
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Top 5 Repuestos Más Vendidos</h3>
+                            </div>
+                            <div id="top-products-list">
+                                <!-- Generado por crm.js -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Últimos Pedidos -->
+                    <div class="table-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                            <h3 style="font-size:1.05rem; font-weight:800; color:#ffffff;">Últimas Transacciones Registradas</h3>
+                        </div>
+                        <table class="crm-table">
+                            <thead>
+                                <tr>
+                                    <th>Guía</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-orders-table-body">
+                                <!-- Inyectado por crm.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 2: KANBAN ORDER PIPELINE
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-orders">
+                    <div class="kanban-board">
+                        <!-- Col 1: Nuevos -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span>📝 Nuevos por Validar</span>
+                                <span class="col-badge-count" id="count-nuevo">0</span>
+                            </div>
+                            <div class="kanban-cards-wrapper" id="kanban-col-nuevo"></div>
+                        </div>
+
+                        <!-- Col 2: Confirmados / En Bodega -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span>📦 En Bodega / Empacando</span>
+                                <span class="col-badge-count" id="count-confirmado">0</span>
+                            </div>
+                            <div class="kanban-cards-wrapper" id="kanban-col-confirmado"></div>
+                        </div>
+
+                        <!-- Col 3: En Ruta -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span>🛵 En Ruta (Motorizado)</span>
+                                <span class="col-badge-count" id="count-en_ruta">0</span>
+                            </div>
+                            <div class="kanban-cards-wrapper" id="kanban-col-en_ruta"></div>
+                        </div>
+
+                        <!-- Col 4: Entregados -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header">
+                                <span>✅ Entregados con Éxito</span>
+                                <span class="col-badge-count" id="count-entregado">0</span>
+                            </div>
+                            <div class="kanban-cards-wrapper" id="kanban-col-entregado"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 3: POS MOSTRADOR FISICO (VENTA EN TIENDA)
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-pos">
+                    <div class="pos-layout">
+                        <!-- Panel Izquierdo: Catálogo Rápido -->
+                        <div class="pos-catalog-panel">
+                            <div class="pos-search-box">
+                                <input type="text" id="pos-search-input" class="form-control" placeholder="Buscar repuesto por código, marca o nombre para añadir..." autocomplete="off">
+                            </div>
+                            <div class="pos-grid-items" id="pos-grid-items">
+                                <!-- Repuestos clickeables inyectados por crm.js -->
+                            </div>
+                        </div>
+
+                        <!-- Panel Derecho: Ticket de Venta -->
+                        <div class="pos-ticket-panel">
+                            <div class="ticket-header">
+                                <h3 style="color:#ffffff; font-size:1.1rem; font-weight:800;">🛒 Ticket de Venta Mostrador</h3>
+                                <span style="font-size:0.75rem; color:#00f2fe;">Juigalpa POS</span>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                                <input type="text" id="pos-client-name" class="form-control" placeholder="Cliente Mostrador" value="Cliente Mostrador">
+                                <input type="text" id="pos-client-phone" class="form-control" placeholder="Teléfono (Opcional)">
+                            </div>
+
+                            <div class="ticket-items-list" id="pos-ticket-items">
+                                <div style="text-align:center; padding:40px 10px; color:#64748b;">
+                                    Haz clic en cualquier repuesto para agregarlo al ticket.
+                                </div>
+                            </div>
+
+                            <!-- Calculadora y Vuelto -->
+                            <div class="pos-calc-box">
+                                <div class="calc-row">
+                                    <span>Subtotal:</span>
+                                    <strong id="pos-calc-subtotal" style="color:#ffffff;">C$ 0.00</strong>
+                                </div>
+                                <div class="calc-row">
+                                    <span>Paga con (Efectivo):</span>
+                                    <input type="number" id="pos-cash-input" class="form-control" style="width:110px; padding:4px 8px; text-align:right;" placeholder="0.00">
+                                </div>
+                                <div class="calc-row">
+                                    <span>Vuelto a Entregar:</span>
+                                    <strong id="pos-calc-change" style="color:#10b981; font-size:1.1rem;">C$ 0.00</strong>
+                                </div>
+                                <div class="calc-row calc-total">
+                                    <span>TOTAL A COBRAR:</span>
+                                    <span id="pos-calc-total">C$ 0.00</span>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:12px;">
+                                <select id="pos-payment-select" class="form-control">
+                                    <option value="efectivo_contraentrega">Efectivo en Caja</option>
+                                    <option value="transferencia_bancaria">Transferencia Bancaria (BAC / Banpro)</option>
+                                    <option value="tarjeta">Tarjeta de Débito / Crédito</option>
+                                </select>
+                            </div>
+
+                            <button id="btn-pos-charge" class="btn-charge-pos">
+                                💵 Cobrar Venta & Imprimir Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 4: INVENTARIO & CATALOGO
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-inventory">
+                    <div class="table-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+                            <div style="display:flex; gap:10px; align-items:center; flex:1; max-width:500px;">
+                                <input type="text" id="inv-search-input" class="form-control" placeholder="Buscar por código, nombre o modelo compatible...">
+                                <select id="inv-filter-cat" class="form-control" style="max-width:180px;">
+                                    <option value="">Todas las Categorías</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table class="crm-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre del Repuesto</th>
+                                    <th>Categoría</th>
+                                    <th>Compatibilidad</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body">
+                                <!-- Inyectado por crm.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 5: DIRECTORIO DE CLIENTES
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-customers">
+                    <div class="table-card">
+                        <h3 style="font-size:1.1rem; font-weight:800; color:#ffffff; margin-bottom:16px;">Directorio de Clientes Juigalpa</h3>
+                        <table class="crm-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Teléfono</th>
+                                    <th>Dirección Habitual</th>
+                                    <th>Total Pedidos</th>
+                                    <th>Total Gastado</th>
+                                    <th>WhatsApp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body">
+                                <!-- Inyectado por crm.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 6: REPORTES DE VENTAS & EXPORTACION
+                     ============================================================= -->
+                <div class="crm-tab-view" id="tab-reports">
+                    <div class="table-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div>
+                                <h3 style="font-size:1.2rem; font-weight:800; color:#ffffff;">Exportación y Reportes de Ventas</h3>
+                                <p style="color:#94a3b8; font-size:0.85rem;">Descarga la información de pedidos y facturación para contabilidad en Excel / CSV.</p>
+                            </div>
+                            <button id="btn-export-csv" class="btn-charge-pos" style="max-width:260px; padding:10px 18px; font-size:0.9rem;">
+                                📥 Descargar Reporte CSV (Excel)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        
+                <!-- ============================================================= -->
+                <!-- TAB 7: SEGURIDAD & CONTROL DE ACCESO BASADO EN ROLES (RBAC) -->
+                <!-- ============================================================= -->
+                <div class="crm-tab-view" id="tab-rbac">
+                    <div class="rbac-dashboard-grid">
+                        
+                        <!-- Columna Izquierda: Usuarios y Asignación de Roles -->
+                        <div class="crm-card rbac-users-card">
+                            <div class="crm-card-header">
+                                <div>
+                                    <h3 class="crm-card-title">🛡️ Directorio de Personal & Roles (MySQL deltastore_db)</h3>
+                                    <small style="color:var(--text-muted);">Asigna privilegios estrictos según el puesto de trabajo en Juigalpa.</small>
+                                </div>
+                                <button class="btn-add-part" id="btn-open-add-user-modal">
+                                    <span>➕</span> Nuevo Empleado
+                                </button>
+                            </div>
+
+                            <div class="table-responsive" style="margin-top:16px;">
+                                <table class="crm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Colaborador</th>
+                                            <th>Correo de Acceso</th>
+                                            <th>Rol Asignado</th>
+                                            <th>Sede</th>
+                                            <th>Cambiar Rol</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rbac-users-table-body">
+                                        <!-- Inyectado dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Matriz de Permisos & Privilegios -->
+                        <div class="crm-card rbac-matrix-card">
+                            <h3 class="crm-card-title">📋 Matriz de Privilegios por Rol</h3>
+                            <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:14px;">
+                                Configuración Zero-Trust activa en todos los módulos operativos.
+                            </p>
+
+                            <div class="role-matrix-item">
+                                <div class="rmi-header">
+                                    <span class="role-pill role-admin">👑 Super Administrador</span>
+                                    <small>Acceso 100% Irrestricto</small>
+                                </div>
+                                <p class="rmi-desc">Control total de finanzas, inventario, usuarios, configuración del sistema, caja POS y sucursales.</p>
+                            </div>
+
+                            <div class="role-matrix-item">
+                                <div class="rmi-header">
+                                    <span class="role-pill role-cajero">💵 Cajero Mostrador POS</span>
+                                    <small>Venta Física & Facturación</small>
+                                </div>
+                                <p class="rmi-desc">Acceso exclusivo a la Terminal POS, cobro en efectivo/transferencia, arqueo de caja y emisión de facturas térmicas de 80mm.</p>
+                            </div>
+
+                            <div class="role-matrix-item">
+                                <div class="rmi-header">
+                                    <span class="role-pill role-bodeguero">📦 Bodeguero / Almacén</span>
+                                    <small>Existencias & Kardex</small>
+                                </div>
+                                <p class="rmi-desc">Ajuste de inventario, registro de entradas de repuestos, alertas de stock mínimo y auditoría de repuestos físicos.</p>
+                            </div>
+
+                            <div class="role-matrix-item">
+                                <div class="rmi-header">
+                                    <span class="role-pill role-vendedor">💼 Asesor de Ventas</span>
+                                    <small>Pipeline & Atención Clientes</small>
+                                </div>
+                                <p class="rmi-desc">Seguimiento de pedidos web, contacto de clientes por WhatsApp, consulta de catálogo y soporte de ventas.</p>
+                            </div>
+
+                            <div class="role-matrix-item">
+                                <div class="rmi-header">
+                                    <span class="role-pill role-repartidor">🛵 Repartidor / Motorizado</span>
+                                    <small>Logística Urbana Juigalpa</small>
+                                </div>
+                                <p class="rmi-desc">Visualización de pedidos en ruta, direcciones en Juigalpa, confirmación de entregas y cobros contraentrega.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+        </main>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: DETALLE DEL PEDIDO & INSPECTOR KANBAN
+         ===================================================================== -->
+    <div class="modal-overlay" id="crm-order-modal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 id="m-order-title" style="color:#00f2fe;">Detalle de Orden</h3>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; font-size:0.88rem;">
+                <div><strong>Cliente:</strong> <span id="m-order-client"></span></div>
+                <div><strong>Total:</strong> <strong id="m-order-total" style="color:#f59e0b; font-size:1.1rem;"></strong></div>
+                <div style="grid-column: 1 / -1;"><strong>Dirección:</strong> <span id="m-order-address"></span></div>
+            </div>
+
+            <!-- Comprobante Bancario Preview -->
+            <div id="m-order-receipt-box" style="margin-bottom:14px; text-align:center;"></div>
+
+            <div style="background:#070d19; padding:14px; border-radius:8px; margin-bottom:18px;">
+                <label class="form-label">Cambiar Estado del Pedido:</label>
+                <select id="m-order-status-select" class="form-control" style="margin-bottom:10px;">
+                    <option value="nuevo">1. Nuevo por Validar</option>
+                    <option value="confirmado">2. En Bodega / Empacando</option>
+                    <option value="en_ruta">3. En Ruta con Motorizado</option>
+                    <option value="entregado">4. Entregado y Cobrado</option>
+                    <option value="cancelado">5. Cancelado</option>
+                </select>
+
+                <label class="form-label">Repartidor Asignado:</label>
+                <input type="text" id="m-order-driver" class="form-control" placeholder="Ej. Carlos Ruiz (Moto Mensajería)">
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button id="btn-save-order-changes" class="btn-charge-pos" style="flex:1;">Guardar Cambios</button>
+                <button id="btn-order-wa" class="btn-topbar" style="background:#25d366; color:#040914; font-weight:800; border:none; padding:12px 18px;">
+                    💬 WhatsApp Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: TICKET TERMICO IMPRIMIBLE (80MM)
+         ===================================================================== -->
+    <div class="modal-overlay" id="crm-receipt-modal">
+        <div class="modal-window" style="max-width:380px; text-align:center;">
+            <div class="modal-header">
+                <h3 style="color:#ffffff; font-size:1rem;">Ticket de Venta (80mm)</h3>
+                <button class="btn-close-modal">&times;</button>
+            </div>
+            
+            <div id="thermal-receipt-printable" style="background:#ffffff; color:#000000; padding:16px; border-radius:6px; margin: 10px 0;">
+                <!-- Rellenado por crm.js -->
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:14px;">
+                <button onclick="window.print()" class="btn-charge-pos" style="flex:1; padding:10px;">
+                    🖨️ Imprimir Ticket
+                </button>
+                <button class="btn-topbar btn-close-modal" style="padding:10px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Auxiliares -->
+    <script src="/js/sound-engine.js"></script>
+    <script src="/js/confetti.js"></script>
+    <script src="/js/icons.js"></script>
+    <script src="/js/crm.js"></script>
+
+    <!-- ================================================================= -->
+    <!-- MODAL DE AUTENTICACIÓN & CONMUTADOR DE ROL (RBAC) -->
+    <!-- ================================================================= -->
+    <div class="modal-backdrop" id="crm-login-modal">
+        <div class="modal-crm-login-box">
+            <div class="login-brand-header">
+                <div class="login-logo-badge">🛡️</div>
+                <h2>Control de Acceso & Seguridad RBAC</h2>
+                <p>Selecciona un rol de demostración o ingresa con credenciales de personal.</p>
+            </div>
+
+            <!-- Accesos Rápidos por Rol (1 Clic) -->
+            <div class="quick-role-picker">
+                <h4>Acceso Rápido por Rol (Demostración de Privilegios):</h4>
+                <div class="quick-role-buttons-grid">
+                    <button class="btn-quick-role role-admin" data-email="admin@deltastore.com" data-pass="admin123">
+                        <span class="qr-icon">👑</span>
+                        <div class="qr-text">
+                            <strong>Super Admin</strong>
+                            <small>Acceso Total</small>
+                        </div>
+                    </button>
+                    <button class="btn-quick-role role-cajero" data-email="cajero@deltastore.com" data-pass="cajero123">
+                        <span class="qr-icon">💵</span>
+                        <div class="qr-text">
+                            <strong>Cajero POS</strong>
+                            <small>Solo Ventas</small>
+                        </div>
+                    </button>
+                    <button class="btn-quick-role role-bodeguero" data-email="bodega@deltastore.com" data-pass="bodega123">
+                        <span class="qr-icon">📦</span>
+                        <div class="qr-text">
+                            <strong>Bodeguero</strong>
+                            <small>Solo Stock</small>
+                        </div>
+                    </button>
+                    <button class="btn-quick-role role-repartidor" data-email="repartidor@deltastore.com" data-pass="moto123">
+                        <span class="qr-icon">🛵</span>
+                        <div class="qr-text">
+                            <strong>Motorizado</strong>
+                            <small>Solo Entregas</small>
+                        </div>
+                    </button>
+                    <button class="btn-quick-role role-vendedor" data-email="ventas@deltastore.com" data-pass="ventas123">
+                        <span class="qr-icon">💼</span>
+                        <div class="qr-text">
+                            <strong>Ventas</strong>
+                            <small>Pipeline Web</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="login-divider">
+                <span>O ingresa con credenciales</span>
+            </div>
+
+            <!-- Formulario de Login Estándar -->
+            <form id="crm-login-form" class="crm-login-form">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="login-email" class="form-input" placeholder="usuario@deltastore.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña Segura (Bcrypt)</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-submit-order" id="btn-submit-login">
+                    <span>🔐</span> Iniciar Sesión con JWT
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar Nuevo Usuario (Admin) -->
+    <div class="modal-backdrop" id="modal-add-user">
+        <div class="modal-crud-content" style="max-width:480px;">
+            <button class="modal-close-btn" id="btn-close-add-user">&times;</button>
+            <div class="crud-header">
+                <h3>➕ Registrar Nuevo Colaborador</h3>
+                <small style="color:var(--text-muted);">El usuario será registrado con contraseña encriptada en MySQL.</small>
+            </div>
+            <form id="form-create-user" style="margin-top:16px;">
+                <div class="form-group">
+                    <label>Nombre y Apellido *</label>
+                    <input type="text" id="new-user-name" class="form-input" placeholder="Ej: Roberto Gómez" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="new-user-email" class="form-input" placeholder="rgomez@deltastore.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña Inicial *</label>
+                    <input type="password" id="new-user-pass" class="form-input" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <div class="form-group">
+                    <label>Rol en el Sistema *</label>
+                    <select id="new-user-role" class="form-input" required>
+                        <option value="vendedor">💼 Asesor de Ventas</option>
+                        <option value="cajero">💵 Cajero Mostrador POS</option>
+                        <option value="bodeguero">📦 Bodeguero / Almacén</option>
+                        <option value="repartidor">🛵 Motorizado / Repartidor</option>
+                        <option value="admin">👑 Super Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono Celular</label>
+                    <input type="tel" id="new-user-phone" class="form-input" placeholder="+505 8888-0000">
+                </div>
+                <button type="submit" class="btn-submit-order" style="margin-top:10px;">
+                    Guardar y Asignar Privilegios
+                </button>
+            </form>
+        </div>
+    </div>
+    
+</body>
+</html>

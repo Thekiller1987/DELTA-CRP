@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="100%" height="100%">
+    <defs>
+        <!-- Gradients -->
+        <linearGradient id="redGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ff3b69" />
+            <stop offset="50%" stop-color="#dc2626" />
+            <stop offset="100%" stop-color="#88081f" />
+        </linearGradient>
+        
+        <linearGradient id="crimsonMetallic" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ff5e85" />
+            <stop offset="35%" stop-color="#dc2626" />
+            <stop offset="70%" stop-color="#991b1b" />
+            <stop offset="100%" stop-color="#450a0a" />
+        </linearGradient>
+
+        <linearGradient id="titaniumSteel" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc" />
+            <stop offset="25%" stop-color="#cbd5e1" />
+            <stop offset="60%" stop-color="#64748b" />
+            <stop offset="100%" stop-color="#1e293b" />
+        </linearGradient>
+
+        <linearGradient id="goldBrass" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fef08a" />
+            <stop offset="40%" stop-color="#eab308" />
+            <stop offset="80%" stop-color="#a16207" />
+            <stop offset="100%" stop-color="#713f12" />
+        </linearGradient>
+
+        <linearGradient id="darkBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#11141a" />
+            <stop offset="100%" stop-color="#07090c" />
+        </linearGradient>
+
+        <radialGradient id="neonPulse" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#dc2626" stop-opacity="0.4" />
+            <stop offset="60%" stop-color="#dc2626" stop-opacity="0.1" />
+            <stop offset="100%" stop-color="#dc2626" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Filters -->
+        <filter id="crimsonShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#dc2626" flood-opacity="0.6"/>
+        </filter>
+        <filter id="heavyShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.8"/>
+        </filter>
+        <filter id="neonBlur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+    </defs>
+
+    <!-- Background Subtle Halo -->
+    <circle cx="300" cy="275" r="220" fill="url(#neonPulse)" />
+
+    <!-- ========================================== -->
+    <!-- 1. TOP CREST: MECHANICAL WINGS & DELTA (Δ) -->
+    <!-- ========================================== -->
+    <g id="top-crest" filter="url(#crimsonShadow)">
+        <!-- Left Wing Feathers -->
+        <path d="M 270 115 C 230 100 170 85 120 105 C 150 120 200 130 255 130 Z" fill="url(#titaniumSteel)" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 265 125 C 215 118 160 112 110 135 C 145 145 195 150 250 145 Z" fill="url(#crimsonMetallic)" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 260 140 C 205 135 150 140 120 165 C 160 168 210 165 255 155 Z" fill="url(#titaniumSteel)" stroke="#0f172a" stroke-width="2"/>
+
+        <!-- Right Wing Feathers -->
+        <path d="M 330 115 C 370 100 430 85 480 105 C 450 120 400 130 345 130 Z" fill="url(#titaniumSteel)" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 335 125 C 385 118 440 112 490 135 C 455 145 405 150 350 145 Z" fill="url(#crimsonMetallic)" stroke="#0f172a" stroke-width="2"/>
+        <path d="M 340 140 C 395 135 450 140 480 165 C 440 168 390 165 345 155 Z" fill="url(#titaniumSteel)" stroke="#0f172a" stroke-width="2"/>
+
+        <!-- Center Delta Emblem (Δ) -->
+        <polygon points="300,50 260,135 340,135" fill="url(#crimsonMetallic)" stroke="#f8fafc" stroke-width="3" filter="url(#neonBlur)"/>
+        <polygon points="300,75 278,122 322,122" fill="#0b0e14" stroke="url(#goldBrass)" stroke-width="2"/>
+        <!-- Inner Delta Flame/Core -->
+        <polygon points="300,88 288,116 312,116" fill="url(#redGlowGrad)" />
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 2. ROLLER DRIVE CHAIN (OUTER RING)         -->
+    <!-- ========================================== -->
+    <g id="drive-chain" filter="url(#heavyShadow)">
+        <!-- Outer Track -->
+        <circle cx="300" cy="275" r="165" fill="#090b0e" stroke="url(#titaniumSteel)" stroke-width="14"/>
+        <circle cx="300" cy="275" r="172" fill="none" stroke="url(#crimsonMetallic)" stroke-width="3"/>
+        <circle cx="300" cy="275" r="158" fill="none" stroke="url(#crimsonMetallic)" stroke-width="3"/>
+
+        <!-- Chain Pins & Links (24 Links circularly distributed) -->
+        <!-- Rendered with precise parametric rotation -->
+        <g id="chain-links" stroke="#000000" stroke-width="1.5">
+            <!-- 24 Links -->
+            <!-- Link 0 to 23 -->
+            <g transform="rotate(0, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(15, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(30, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(45, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(60, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(75, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(90, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(105, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(120, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(135, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(150, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(165, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(180, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(195, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(210, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(225, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(240, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(255, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(270, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(285, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(300, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(315, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+            <g transform="rotate(330, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#goldBrass)"/><circle cx="294" cy="109" r="2.5" fill="#1e293b"/><circle cx="306" cy="109" r="2.5" fill="#1e293b"/></g>
+            <g transform="rotate(345, 300, 275)"><rect x="290" y="103" width="20" height="12" rx="4" fill="url(#crimsonMetallic)"/><circle cx="294" cy="109" r="2.5" fill="#f8fafc"/><circle cx="306" cy="109" r="2.5" fill="#f8fafc"/></g>
+        </g>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 3. MECHANICAL GEAR SPROCKET (CORONA)       -->
+    <!-- ========================================== -->
+    <g id="gear-sprocket">
+        <circle cx="300" cy="275" r="142" fill="url(#darkBgGrad)" stroke="#1e293b" stroke-width="4"/>
+        
+        <!-- Gear Teeth (18 Teeth) -->
+        <g stroke="#0f172a" stroke-width="1.5">
+            <g transform="rotate(0, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(20, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(40, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(60, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(80, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(100, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(120, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(140, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(160, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(180, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(200, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(220, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(240, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(260, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(280, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(300, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+            <g transform="rotate(320, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#titaniumSteel)"/></g>
+            <g transform="rotate(340, 300, 275)"><polygon points="292,132 308,132 305,142 295,142" fill="url(#crimsonMetallic)"/></g>
+        </g>
+
+        <!-- Inner Bevel Circle with Crimson Ring -->
+        <circle cx="300" cy="275" r="115" fill="#0d1117" stroke="url(#crimsonMetallic)" stroke-width="4"/>
+        <circle cx="300" cy="275" r="110" fill="none" stroke="#dc2626" stroke-width="1" stroke-dasharray="6 4" opacity="0.6"/>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 4. CENTRAL 4-STROKE ENGINE PISTON & ROD    -->
+    <!-- ========================================== -->
+    <g id="central-piston" filter="url(#crimsonShadow)">
+        <!-- Connecting Rod (Biela) -->
+        <path d="M 285 275 L 270 380 L 330 380 L 315 275 Z" fill="url(#titaniumSteel)" stroke="#090d16" stroke-width="3"/>
+        <circle cx="300" cy="380" r="26" fill="url(#darkBgGrad)" stroke="url(#crimsonMetallic)" stroke-width="6"/>
+        <circle cx="300" cy="380" r="14" fill="#05070a" stroke="url(#goldBrass)" stroke-width="2"/>
+
+        <!-- Piston Body (Pistón 4T) -->
+        <!-- Crown / Top Dome -->
+        <path d="M 235 200 C 235 185 365 185 365 200 L 365 285 C 365 295 350 298 338 288 C 325 278 300 278 285 288 C 272 298 235 295 235 285 Z" fill="url(#titaniumSteel)" stroke="#090d16" stroke-width="3"/>
+        
+        <!-- Piston Compression Ring Grooves (Anillos de Fuego) -->
+        <line x1="235" y1="210" x2="365" y2="210" stroke="#090d16" stroke-width="3"/>
+        <line x1="235" y1="218" x2="365" y2="218" stroke="#dc2626" stroke-width="3"/>
+        <line x1="235" y1="226" x2="365" y2="226" stroke="#090d16" stroke-width="3"/>
+
+        <!-- Piston Pin Hole (Bulón) -->
+        <circle cx="300" cy="255" r="20" fill="#090d16" stroke="url(#crimsonMetallic)" stroke-width="4"/>
+        <circle cx="300" cy="255" r="10" fill="url(#titaniumSteel)" />
+
+        <!-- Red Accent Center Delta Laser Cut -->
+        <polygon points="300,195 288,206 312,206" fill="#dc2626" />
+    </g>
+
+    <!-- ========================================== -->
+    <!-- 5. LOWER RIBBON / BANNER WITH TYPOGRAPHY   -->
+    <!-- ========================================== -->
+    <g id="banner-typography" filter="url(#heavyShadow)">
+        <!-- Banner Fold Left & Right Wings -->
+        <polygon points="50,470 120,440 120,510 50,540" fill="#7f1d1d" stroke="#0f172a" stroke-width="2"/>
+        <polygon points="550,470 480,440 480,510 550,540" fill="#7f1d1d" stroke="#0f172a" stroke-width="2"/>
+
+        <!-- Main Curved Ribbon Plate -->
+        <path d="M 80 445 C 200 425 400 425 520 445 L 505 525 C 390 505 210 505 95 525 Z" 
+              fill="url(#crimsonMetallic)" stroke="#f8fafc" stroke-width="3"/>
+
+        <!-- Subtle Inner Border -->
+        <path d="M 90 455 C 205 435 395 435 510 455" fill="none" stroke="#fef08a" stroke-width="1.5" stroke-dasharray="5 3"/>
+
+        <!-- Main Brand Title: DELTASTORE -->
+        <text x="300" y="492" 
+              font-family="'Montserrat', 'Arial Black', sans-serif" 
+              font-weight="900" 
+              font-size="44" 
+              letter-spacing="5"
+              fill="#ffffff" 
+              stroke="#0f172a"
+              stroke-width="2"
+              text-anchor="middle"
+              filter="url(#neonBlur)">
+            DELTASTORE
+        </text>
+
+        <!-- Subtitle Pill Plaque -->
+        <rect x="140" y="540" width="320" height="32" rx="16" fill="#090d16" stroke="url(#goldBrass)" stroke-width="2"/>
+        <text x="300" y="562" 
+              font-family="'Montserrat', 'Segoe UI', sans-serif" 
+              font-weight="800" 
+              font-size="14" 
+              letter-spacing="3"
+              fill="#f8fafc" 
+              text-anchor="middle">
+            PIEZAS Y ACCESORIOS DE MOTO
+        </text>
+
+        <!-- Location Badge Juigalpa -->
+        <rect x="210" y="582" width="180" height="22" rx="11" fill="url(#crimsonMetallic)" />
+        <text x="300" y="597" 
+              font-family="'Montserrat', sans-serif" 
+              font-weight="700" 
+              font-size="11" 
+              letter-spacing="2"
+              fill="#ffffff" 
+              text-anchor="middle">
+            JUIGALPA, NICARAGUA
+        </text>
+    </g>
+</svg>
