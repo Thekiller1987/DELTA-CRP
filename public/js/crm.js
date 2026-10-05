@@ -591,6 +591,10 @@ document.addEventListener('DOMContentLoaded', () => {
             en_ruta: { text: '✅ Marcar Entregado', nextState: 'entregado' }
         }[currentStatus];
 
+        const cleanPhone = (order.cliente_telefono || '').replace(/[^0-9]/g, '');
+        const waPhone = cleanPhone.length === 8 ? '505' + cleanPhone : cleanPhone;
+        const waMsg = encodeURIComponent(`¡Hola ${order.cliente_nombre}! Te saludamos de DeltaStore Juigalpa ⚡. Tu orden #${order.numero_orden} por C$ ${Number(order.total).toFixed(2)} está lista/en camino hacia: ${order.direccion_exacta} (${order.punto_referencia || 'Juigalpa'}). Nuestro repartidor le visitará en breve. Si paga en efectivo, tenga listo su monto. ¡Gracias por confiar en DeltaStore!`);
+
         card.innerHTML = `
             <div class="order-card-header">
                 <span class="order-code">${order.numero_orden}</span>
@@ -600,11 +604,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="order-address">📍 ${order.direccion_exacta || 'Juigalpa'}</div>
             <div class="order-footer-row">
                 <span class="order-price">C$ ${Number(order.total).toFixed(2)}</span>
-                <span style="font-size:0.75rem; color:#94a3b8;">${order.metodo_pago === 'contra_entrega' ? '💵 Efectivo' : '🏛️ Banco'}</span>
+                <span style="font-size:0.75rem; color:#94a3b8;">${order.metodo_pago === 'contra_entrega' || order.metodo_pago === 'efectivo_contraentrega' ? '💵 Efectivo' : '🏛️ Banco'}</span>
             </div>
-            <div style="display:flex; gap:6px; margin-top:10px;">
-                <button class="btn-topbar btn-inspect-order" style="flex:1; padding:4px 8px; font-size:0.75rem;">Detalle</button>
-                ${nextAction ? `<button class="btn-topbar btn-advance-order" style="flex:1.5; background:rgba(0,242,254,0.15); color:#00f2fe; border-color:var(--border-cyan); padding:4px 8px; font-size:0.75rem; font-weight:800;">${nextAction.text}</button>` : ''}
+            <div style="display:flex; gap:4px; margin-top:10px; flex-wrap:wrap;">
+                <button class="btn-topbar btn-inspect-order" style="flex:1; padding:4px 6px; font-size:0.72rem;">Detalle</button>
+                <button class="btn-topbar btn-print-ticket-card" style="padding:4px 8px; font-size:0.72rem; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);" title="Imprimir Ticket 80mm">🧾</button>
+                <button class="btn-topbar btn-wa-card" style="padding:4px 8px; font-size:0.72rem; background:rgba(37,211,102,0.18); color:#25d366; border:1px solid rgba(37,211,102,0.4);" title="Enviar WhatsApp al cliente">💬 WA</button>
+                ${nextAction ? `<button class="btn-topbar btn-advance-order" style="flex:1.4; background:rgba(0,242,254,0.15); color:#00f2fe; border-color:var(--border-cyan); padding:4px 6px; font-size:0.72rem; font-weight:800;">${nextAction.text}</button>` : ''}
             </div>
         `;
 
@@ -612,6 +618,26 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             openOrderDetailModal(order);
         });
+
+        const btnCardPrint = card.querySelector('.btn-print-ticket-card');
+        if (btnCardPrint) {
+            btnCardPrint.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openThermalReceipt(order, order.cliente_nombre, order.cliente_telefono);
+            });
+        }
+
+        const btnCardWa = card.querySelector('.btn-wa-card');
+        if (btnCardWa) {
+            btnCardWa.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!waPhone) {
+                    alert('Este pedido no tiene número de teléfono registrado.');
+                    return;
+                }
+                window.open(`https://wa.me/${waPhone}?text=${waMsg}`, '_blank');
+            });
+        }
 
         const btnAdv = card.querySelector('.btn-advance-order');
         if (btnAdv && nextAction) {
@@ -868,49 +894,101 @@ document.addEventListener('DOMContentLoaded', () => {
         const content = document.getElementById('thermal-receipt-printable');
         if (!modal || !content) return;
 
-        const dateStr = new Date().toLocaleString('es-NI');
+        const dateStr = new Date().toLocaleString('es-NI', { dateStyle: 'short', timeStyle: 'short' });
+        const totalNum = Number(saleData.total || 0);
+        const subtotalNum = totalNum / 1.15;
+        const ivaNum = totalNum - subtotalNum;
+        const usdRate = 36.62;
+        const totalUsd = totalNum / usdRate;
 
         let rowsHtml = '';
-        (saleData.items || []).forEach(it => {
-            rowsHtml += `
+        const items = saleData.items || [];
+        if (items.length > 0) {
+            items.forEach(it => {
+                const name = it.nombre || it.nombre_producto || 'Repuesto de Moto';
+                const qty = it.cantidad || 1;
+                const sub = Number(it.subtotal || (it.precio_unitario * qty) || 0);
+                rowsHtml += `
+                    <tr>
+                        <td style="padding:2px 0; text-align:left;">${name}</td>
+                        <td style="text-align:center;">${qty}</td>
+                        <td style="text-align:right;">C$ ${sub.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            rowsHtml = `
                 <tr>
-                    <td style="padding:3px 0;">${it.nombre}</td>
-                    <td style="text-align:center;">${it.cantidad}</td>
-                    <td style="text-align:right;">C$ ${Number(it.subtotal).toFixed(2)}</td>
+                    <td style="padding:2px 0; text-align:left;">Repuestos según orden</td>
+                    <td style="text-align:center;">1</td>
+                    <td style="text-align:right;">C$ ${totalNum.toFixed(2)}</td>
                 </tr>
             `;
-        });
+        }
+
+        const barcode = (saleData.numero_orden || 'DS-2026').replace(/[^a-zA-Z0-9]/g, '');
 
         content.innerHTML = `
-            <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:8px; margin-bottom:8px;">
-                <div style="font-size:1.15rem; font-weight:900;">DELTASTORE JUIGALPA</div>
-                <div style="font-size:0.75rem;">MOTO REPUESTOS & ACCESORIOS</div>
-                <div style="font-size:0.72rem;">Juigalpa, Chontales &bull; Tel: +505 8888-9999</div>
-            </div>
-            <div style="font-size:0.75rem; margin-bottom:8px;">
-                <div><strong>No. Ticket:</strong> ${saleData.numero_orden}</div>
-                <div><strong>Fecha:</strong> ${dateStr}</div>
-                <div><strong>Cliente:</strong> ${clientName}</div>
-            </div>
-            <table style="width:100%; font-size:0.75rem; border-collapse:collapse; margin-bottom:8px;">
-                <thead>
-                    <tr style="border-bottom:1px solid #000;">
-                        <th style="text-align:left;">Desc</th>
-                        <th style="text-align:center;">Cant</th>
-                        <th style="text-align:right;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>${rowsHtml}</tbody>
-            </table>
-            <div style="border-top:1px dashed #000; padding-top:6px; font-size:0.85rem;">
-                <div style="display:flex; justify-content:space-between; font-weight:800;">
-                    <span>TOTAL:</span>
-                    <span>C$ ${Number(saleData.total).toFixed(2)}</span>
+            <div style="font-family:'Courier New', Courier, monospace; color:#000000; font-size:12px; line-height:1.25;">
+                <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; margin-bottom:6px;">
+                    <div style="font-size:16px; font-weight:900; letter-spacing:1px;">⚡ DELTASTORE ⚡</div>
+                    <div style="font-size:11px; font-weight:700;">REPUESTOS & ACCESORIOS DE MOTO</div>
+                    <div style="font-size:10px;">RUC: J0310000284910 &bull; DGI Nicaragua</div>
+                    <div style="font-size:10px;">Costado Norte Parque Central, Juigalpa</div>
+                    <div style="font-size:10px;">WhatsApp: +505 8965-4945 / 8456-7890</div>
                 </div>
-            </div>
-            <div style="text-align:center; margin-top:14px; font-size:0.72rem;">
-                ¡Gracias por su compra!<br>
-                Garantía válida con este ticket.
+
+                <div style="margin-bottom:6px; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span><strong>Ticket:</strong> #${saleData.numero_orden}</span>
+                        <span>${dateStr}</span>
+                    </div>
+                    <div><strong>Cliente:</strong> ${clientName || 'Cliente Mostrador'}</div>
+                    ${clientPhone && clientPhone !== 'N/A' ? `<div><strong>Tel:</strong> ${clientPhone}</div>` : ''}
+                    <div><strong>Atendido por:</strong> Waskar (Cajero Principal)</div>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:6px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #000; font-size:10px;">
+                            <th style="text-align:left; padding-bottom:3px;">DESCRIPCIÓN</th>
+                            <th style="text-align:center; padding-bottom:3px; width:30px;">CANT</th>
+                            <th style="text-align:right; padding-bottom:3px; width:70px;">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+
+                <div style="border-top:1px dashed #000; padding-top:4px; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <span>Subtotal Neto:</span>
+                        <span>C$ ${subtotalNum.toFixed(2)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                        <span>IVA (15% Incluido):</span>
+                        <span>C$ ${ivaNum.toFixed(2)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:900; border-top:1px solid #000; border-bottom:1px solid #000; padding:3px 0; margin:4px 0;">
+                        <span>TOTAL CÓRDOBAS:</span>
+                        <span>C$ ${totalNum.toFixed(2)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#333; margin-bottom:4px;">
+                        <span>Equiv. USD (T.C. ${usdRate}):</span>
+                        <span>$ ${totalUsd.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin:10px 0 6px 0; letter-spacing:3px; font-weight:900; font-size:15px; border-top:1px dashed #000; padding-top:6px;">
+                    ||||| | |||| ||| || | |||||
+                    <div style="letter-spacing:1px; font-size:10px; font-weight:normal; margin-top:2px;">*${barcode}*</div>
+                </div>
+
+                <div style="text-align:center; font-size:9.5px; line-height:1.2; border-top:1px dashed #000; padding-top:5px; margin-top:4px;">
+                    <strong>¡GRACIAS POR SU COMPRA!</strong><br>
+                    * Garantía: 30 días en piezas mecánicas con este ticket.<br>
+                    * Piezas eléctricas no tienen cambio una vez abiertas.<br>
+                    * Soporte Técnico: +505 8965-4945 | Juigalpa
+                </div>
             </div>
         `;
 
@@ -1077,3 +1155,225 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
+    // =============================================================
+    // MODULO DE ARQUEO DE CAJA & CUADRE DE TURNO (C$ Y USD)
+    // =============================================================
+    const btnOpenArqueo = document.getElementById('btn-open-arqueo');
+    const modalArqueo = document.getElementById('modal-arqueo-caja');
+    const btnCloseArqueo = document.getElementById('btn-close-arqueo');
+    let cashStatusData = null;
+
+    if (btnOpenArqueo && modalArqueo) {
+        btnOpenArqueo.addEventListener('click', async () => {
+            modalArqueo.classList.add('open');
+            await loadLiveCashStatus();
+            calculateArqueo();
+        });
+    }
+
+    if (btnCloseArqueo && modalArqueo) {
+        btnCloseArqueo.addEventListener('click', () => {
+            modalArqueo.classList.remove('open');
+        });
+    }
+
+    async function loadLiveCashStatus() {
+        try {
+            const res = await fetch('/api/crm/cash-closing/current');
+            if (res.ok) {
+                cashStatusData = await res.json();
+                const vtaEl = document.getElementById('arqueo-ventas-sistema');
+                if (vtaEl && cashStatusData.efectivo) {
+                    vtaEl.textContent = `C$ ${Number(cashStatusData.efectivo.total || 0).toFixed(2)} (${cashStatusData.efectivo.pedidos || 0} vtas)`;
+                }
+            }
+        } catch (e) {
+            console.error('Error cargando estado de caja:', e);
+        }
+    }
+
+    function calculateArqueo() {
+        let totalCordobas = 0;
+        document.querySelectorAll('.arqueo-input').forEach(inp => {
+            const denom = Number(inp.dataset.denominacion || 1);
+            const count = Math.max(0, parseInt(inp.value) || 0);
+            const sub = denom * count;
+            totalCordobas += sub;
+            const subEl = inp.parentElement.querySelector('.arqueo-subtotal');
+            if (subEl) subEl.textContent = `C$ ${sub.toFixed(2)}`;
+        });
+
+        // USD
+        const usdInp = document.getElementById('arqueo-usd-input');
+        const usdCount = Math.max(0, parseFloat(usdInp ? usdInp.value : 0) || 0);
+        const usdCordobas = usdCount * 36.62;
+        const usdSubEl = document.getElementById('arqueo-usd-subtotal');
+        if (usdSubEl) usdSubEl.textContent = `C$ ${usdCordobas.toFixed(2)}`;
+
+        const totalFisico = totalCordobas + usdCordobas;
+        const totalFisicoEl = document.getElementById('arqueo-total-fisico');
+        if (totalFisicoEl) totalFisicoEl.textContent = `C$ ${totalFisico.toFixed(2)}`;
+
+        const fondoInicial = Math.max(0, parseFloat(document.getElementById('arqueo-fondo-inicial')?.value || 1000));
+        const ventasSistema = cashStatusData && cashStatusData.efectivo ? Number(cashStatusData.efectivo.total || 0) : 0;
+        const esperado = fondoInicial + ventasSistema;
+
+        const espEl = document.getElementById('arqueo-total-esperado');
+        if (espEl) espEl.textContent = `C$ ${esperado.toFixed(2)}`;
+
+        const dif = totalFisico - esperado;
+        const difValEl = document.getElementById('arqueo-diferencia-valor');
+        const difStatusEl = document.getElementById('arqueo-diferencia-estado');
+        const difBox = document.getElementById('arqueo-diferencia-box');
+
+        if (difValEl && difStatusEl && difBox) {
+            if (Math.abs(dif) < 0.05) {
+                difValEl.textContent = 'C$ 0.00';
+                difValEl.style.color = '#10b981';
+                difStatusEl.textContent = '✅ Cuadre Exacto (Sin faltante ni sobrante)';
+                difStatusEl.style.color = '#10b981';
+                difBox.style.background = 'rgba(16,185,129,0.12)';
+                difBox.style.borderColor = 'rgba(16,185,129,0.3)';
+            } else if (dif > 0) {
+                difValEl.textContent = `+C$ ${dif.toFixed(2)}`;
+                difValEl.style.color = '#38bdf8';
+                difStatusEl.textContent = `🟢 Sobrante en caja (+C$ ${dif.toFixed(2)})`;
+                difStatusEl.style.color = '#38bdf8';
+                difBox.style.background = 'rgba(56,189,248,0.12)';
+                difBox.style.borderColor = 'rgba(56,189,248,0.3)';
+            } else {
+                difValEl.textContent = `-C$ ${Math.abs(dif).toFixed(2)}`;
+                difValEl.style.color = '#f43f5e';
+                difStatusEl.textContent = `🔴 Faltante en caja (-C$ ${Math.abs(dif).toFixed(2)})`;
+                difStatusEl.style.color = '#f43f5e';
+                difBox.style.background = 'rgba(244,63,94,0.12)';
+                difBox.style.borderColor = 'rgba(244,63,94,0.3)';
+            }
+        }
+    }
+
+    document.querySelectorAll('.arqueo-input').forEach(inp => {
+        inp.addEventListener('input', calculateArqueo);
+    });
+    const usdInpRef = document.getElementById('arqueo-usd-input');
+    if (usdInpRef) usdInpRef.addEventListener('input', calculateArqueo);
+    const fondoInpRef = document.getElementById('arqueo-fondo-inicial');
+    if (fondoInpRef) fondoInpRef.addEventListener('input', calculateArqueo);
+
+    // Guardar Cierre de Caja
+    const btnSaveArqueo = document.getElementById('btn-save-arqueo');
+    if (btnSaveArqueo) {
+        btnSaveArqueo.addEventListener('click', async () => {
+            btnSaveArqueo.disabled = true;
+            btnSaveArqueo.textContent = '⏳ Guardando...';
+            try {
+                const desglose = {};
+                document.querySelectorAll('.arqueo-input').forEach(inp => {
+                    desglose['C$' + inp.dataset.denominacion] = parseInt(inp.value) || 0;
+                });
+                desglose['USD'] = parseFloat(document.getElementById('arqueo-usd-input')?.value || 0);
+
+                const fondoInicial = parseFloat(document.getElementById('arqueo-fondo-inicial')?.value || 1000);
+                const totalFisicoText = document.getElementById('arqueo-total-fisico')?.textContent || '0';
+                const totalFisico = parseFloat(totalFisicoText.replace(/[^0-9.]/g, '')) || 0;
+                const ventasSistema = cashStatusData && cashStatusData.efectivo ? Number(cashStatusData.efectivo.total || 0) : 0;
+                const esperado = fondoInicial + ventasSistema;
+                const dif = totalFisico - esperado;
+
+                const payload = {
+                    cajero: 'Waskar (Cajero Principal)',
+                    fondo_inicial: fondoInicial,
+                    total_efectivo_declarado: totalFisico,
+                    total_efectivo_sistema: ventasSistema,
+                    diferencia: dif,
+                    total_transferencias: cashStatusData?.transferencias?.total || 0,
+                    total_tarjetas: cashStatusData?.tarjetas?.total || 0,
+                    total_general: (cashStatusData?.total_general || 0) + fondoInicial,
+                    desglose_billetes: desglose,
+                    observaciones: document.getElementById('arqueo-observaciones')?.value.trim() || 'Cierre registrado conforme'
+                };
+
+                const res = await fetch('/api/crm/cash-closing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (window.soundEngine) window.soundEngine.playSuccess();
+                    if (window.triggerConfetti) window.triggerConfetti();
+                    alert('✅ ¡Cierre de caja guardado con éxito! Acta #' + data.cierre_id);
+                    if (modalArqueo) modalArqueo.classList.remove('open');
+                } else {
+                    alert('Error guardando cierre: ' + (data.error || 'Desconocido'));
+                }
+            } catch (e) {
+                console.error('Error guardando arqueo:', e);
+                alert('Fallo de conexión al guardar cierre de caja.');
+            } finally {
+                btnSaveArqueo.disabled = false;
+                btnSaveArqueo.textContent = '💾 Guardar Cierre';
+            }
+        });
+    }
+
+    // Imprimir Acta de Arqueo en formato 80mm
+    const btnPrintArqueo = document.getElementById('btn-print-arqueo');
+    if (btnPrintArqueo) {
+        btnPrintArqueo.addEventListener('click', () => {
+            const modalRec = document.getElementById('crm-receipt-modal');
+            const contRec = document.getElementById('thermal-receipt-printable');
+            if (!modalRec || !contRec) return;
+
+            const dateStr = new Date().toLocaleString('es-NI');
+            const totalFisico = document.getElementById('arqueo-total-fisico')?.textContent || 'C$ 0.00';
+            const ventasSis = document.getElementById('arqueo-ventas-sistema')?.textContent || 'C$ 0.00';
+            const fondo = document.getElementById('arqueo-fondo-inicial')?.value || '1000';
+            const esperado = document.getElementById('arqueo-total-esperado')?.textContent || 'C$ 0.00';
+            const difVal = document.getElementById('arqueo-diferencia-valor')?.textContent || 'C$ 0.00';
+            const obs = document.getElementById('arqueo-observaciones')?.value || 'Sin observaciones';
+
+            contRec.innerHTML = `
+                <div style="font-family:'Courier New', monospace; font-size:12px; color:#000;">
+                    <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; margin-bottom:6px;">
+                        <div style="font-size:15px; font-weight:900;">⚡ DELTASTORE JUIGALPA ⚡</div>
+                        <div style="font-size:12px; font-weight:700;">ACTA DE ARQUEO & CIERRE DE CAJA</div>
+                        <div style="font-size:10px;">Sucursal Central Juigalpa &bull; RUC J0310000284910</div>
+                    </div>
+                    <div style="font-size:11px; margin-bottom:8px;">
+                        <div><strong>Fecha / Hora:</strong> ${dateStr}</div>
+                        <div><strong>Cajero:</strong> Waskar (Cajero Principal)</div>
+                        <div><strong>Fondo Inicial:</strong> C$ ${Number(fondo).toFixed(2)}</div>
+                    </div>
+                    <div style="border-top:1px dashed #000; border-bottom:1px dashed #000; padding:6px 0; font-size:11px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Ventas Efectivo Sistema:</span>
+                            <span>${ventasSis}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Total Esperado en Caja:</span>
+                            <span>${esperado}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-weight:900; font-size:12px; margin-top:4px;">
+                            <span>Total Efectivo Contado:</span>
+                            <span>${totalFisico}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-weight:900; margin-top:4px;">
+                            <span>DIFERENCIA / BALANCE:</span>
+                            <span>${difVal}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px; font-size:10px;">
+                        <strong>Notas:</strong> ${obs}
+                    </div>
+                    <div style="margin-top:20px; text-align:center; border-top:1px solid #000; padding-top:4px; font-size:10px;">
+                        Firma Cajero Responsable
+                    </div>
+                </div>
+            `;
+            if (modalArqueo) modalArqueo.classList.remove('open');
+            modalRec.classList.add('open');
+        });
+    }

@@ -486,4 +486,134 @@ router.get('/brands', async (req, res) => {
     }
 });
 
+// ==========================================================================
+// ARQUEO DE CAJA / CIERRE DE TURNO — JUIGALPA (CÓRDOBAS Y DÓLARES)
+// ==========================================================================
+
+async function ensureCierresTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS cierres_caja (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                fecha_cierre TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                cajero VARCHAR(100) NOT NULL DEFAULT 'Cajero Mostrador',
+                fondo_inicial DECIMAL(10,2) NOT NULL DEFAULT 1000.00,
+                total_efectivo_declarado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_efectivo_sistema DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                diferencia DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_transferencias DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_tarjetas DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                total_general DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                desglose_billetes JSON,
+                observaciones TEXT,
+                sucursal VARCHAR(100) DEFAULT 'Juigalpa Central'
+            ) ENGINE=InnoDB;
+        `);
+    } catch (e) {
+        console.error('Error creando tabla cierres_caja:', e.message);
+    }
+}
+ensureCierresTable();
+
+// GET /cash-closing/current — Resumen en vivo de ventas de caja
+router.get('/cash-closing/current', async (req, res) => {
+    try {
+        const [[efectivo]] = await pool.query(`
+            SELECT COALESCE(SUM(total), 0) AS total, COUNT(*) AS conteo
+            FROM pedidos
+            WHERE DATE(creado_en) = CURDATE() 
+              AND estado != 'cancelado' 
+              AND (metodo_pago = 'efectivo_contraentrega' OR metodo_pago = 'efectivo')
+        `);
+
+        const [[transferencias]] = await pool.query(`
+            SELECT COALESCE(SUM(total), 0) AS total, COUNT(*) AS conteo
+            FROM pedidos
+            WHERE DATE(creado_en) = CURDATE() 
+              AND estado != 'cancelado' 
+              AND (metodo_pago = 'transferencia_bancaria' OR metodo_pago = 'transferencia')
+        `);
+
+        const [[tarjetas]] = await pool.query(`
+            SELECT COALESCE(SUM(total), 0) AS total, COUNT(*) AS conteo
+            FROM pedidos
+            WHERE DATE(creado_en) = CURDATE() 
+              AND estado != 'cancelado' 
+              AND (metodo_pago = 'tarjeta_online' OR metodo_pago = 'tarjeta')
+        `);
+
+        const totalEfectivo = parseFloat(efectivo.total);
+        const totalTransf = parseFloat(transferencias.total);
+        const totalTarj = parseFloat(tarjetas.total);
+        const totalGlobal = totalEfectivo + totalTransf + totalTarj;
+
+        res.json({
+            fecha: new Date().toLocaleDateString('es-NI'),
+            hora: new Date().toLocaleTimeString('es-NI'),
+            efectivo: { total: totalEfectivo, pedidos: efectivo.conteo },
+            transferencias: { total: totalTransf, pedidos: transferencias.conteo },
+            tarjetas: { total: totalTarj, pedidos: tarjetas.conteo },
+            total_general: totalGlobal,
+            total_pedidos: efectivo.conteo + transferencias.conteo + tarjetas.conteo
+        });
+    } catch (error) {
+        console.error('Error obteniendo estado de caja:', error);
+        res.status(500).json({ error: 'Error al consultar corte de caja' });
+    }
+});
+
+// POST /cash-closing — Guardar Acta de Cierre de Caja
+router.post('/cash-closing', async (req, res) => {
+    const {
+        cajero = 'Cajero Mostrador',
+        fondo_inicial = 1000.00,
+        total_efectivo_declarado = 0.00,
+        total_efectivo_sistema = 0.00,
+        diferencia = 0.00,
+        total_transferencias = 0.00,
+        total_tarjetas = 0.00,
+        total_general = 0.00,
+        desglose_billetes = {},
+        observaciones = ''
+    } = req.body;
+
+    try {
+        await ensureCierresTable();
+
+        const [result] = await pool.query(`
+            INSERT INTO cierres_caja (
+                cajero, fondo_inicial, total_efectivo_declarado, total_efectivo_sistema,
+                diferencia, total_transferencias, total_tarjetas, total_general,
+                desglose_billetes, observaciones, sucursal
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Juigalpa Central')
+        `, [
+            cajero, fondo_inicial, total_efectivo_declarado, total_efectivo_sistema,
+            diferencia, total_transferencias, total_tarjetas, total_general,
+            JSON.stringify(desglose_billetes), observaciones
+        ]);
+
+        res.status(201).json({
+            success: true,
+            cierre_id: result.insertId,
+            message: 'Cierre de caja registrado exitosamente',
+            fecha: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error registrando cierre de caja:', error);
+        res.status(500).json({ error: 'Error al guardar cierre de caja' });
+    }
+});
+
+// GET /cash-closing/history — Historial de Arqueos y Cierres
+router.get('/cash-closing/history', async (req, res) => {
+    try {
+        await ensureCierresTable();
+        const [rows] = await pool.query('SELECT * FROM cierres_caja ORDER BY id DESC LIMIT 15');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error obteniendo historial de cierres:', error);
+        res.status(500).json({ error: 'Error al consultar historial' });
+    }
+});
+
 module.exports = router;
