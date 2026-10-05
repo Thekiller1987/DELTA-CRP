@@ -23,52 +23,12 @@
     <!-- ================================================================= -->
     <!-- PANTALLA DE INICIO DE SESIÓN REAL — DELTASTORE CRM & ERP -->
     <!-- ================================================================= -->
-    <div id="crm-auth-screen" class="crm-auth-screen" style="display:flex;">
-        <div class="auth-card-box">
-            <div class="auth-header">
-                <div class="auth-logo-icon">⚡</div>
-                <h1 class="auth-title">DELTA<span>STORE</span></h1>
-                <p class="auth-subtitle">SISTEMA ERP &bull; PUNTO DE VENTA &bull; INVENTARIO</p>
-                <div class="auth-badge">📍 Sede Central Juigalpa, Chontales</div>
-            </div>
-
-            <div id="auth-error-alert" class="auth-error-alert" style="display:none;"></div>
-
-            <form id="crm-real-login-form" class="auth-form" autocomplete="on">
-                <div class="auth-form-group">
-                    <label for="login-email">Correo Electrónico</label>
-                    <div class="auth-input-wrap">
-                        <span class="auth-input-icon">✉️</span>
-                        <input type="email" id="login-email" class="auth-input" placeholder="admin@deltastore.com" required autocomplete="username">
-                    </div>
-                </div>
-
-                <div class="auth-form-group">
-                    <label for="login-password">Contraseña</label>
-                    <div class="auth-input-wrap">
-                        <span class="auth-input-icon">🔒</span>
-                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
-                    </div>
-                </div>
-
-                <button type="submit" id="btn-submit-real-login" class="btn-auth-submit">
-                    <span>🔐</span> Iniciar Sesión en el ERP
-                </button>
-            </form>
-
-            <div class="auth-footer-info">
-                <div style="font-size:0.75rem; color:#64748b;">
-                    🛡️ Autenticación Cifrada Bcrypt &bull; Token JWT &bull; MySQL deltastore_db
-                </div>
-                <div style="font-size:0.72rem; color:#94a3b8; margin-top:6px;">
-                    Usuario Administrador: <code>admin@deltastore.com</code>
-                </div>
-            </div>
-        </div>
+    <!-- Login retirado: Acceso directo como Admin Waskar -->
+    <div id="crm-auth-screen" class="crm-auth-screen" style="display:none !important;"></div>
     </div>
 
 
-    <div class="crm-layout" id="crm-main-layout" style="display:none;">
+    <div class="crm-layout" id="crm-main-layout" style="display:flex;">
         
         <!-- SIDEBAR ERP -->
         <aside class="crm-sidebar">
@@ -115,7 +75,7 @@
                 <div class="user-profile-badge">
                     <div class="user-avatar">W</div>
                     <div class="user-meta">
-                        <h4>Waskar (Fundador)</h4>
+                        <h4>Admin Waskar</h4>
                         <p>Sede Central Juigalpa</p>
                     </div>
                 </div>
@@ -147,7 +107,7 @@
                     <div class="crm-user-session-widget" id="crm-user-session-widget">
                         <div class="user-role-avatar" id="current-user-avatar">👑</div>
                         <div class="user-role-info">
-                            <span class="current-user-name" id="current-user-name">Waskar Administrador</span>
+                            <span class="current-user-name" id="current-user-name">Admin Waskar</span>
                             <span class="current-user-role-badge role-admin" id="current-user-role-badge">Super Administrador</span>
                         </div>
                         <button class="btn-switch-role" id="btn-open-role-switcher" title="Cambiar de Rol / Usuario">⇄ Rol</button>

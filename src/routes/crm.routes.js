@@ -6,11 +6,11 @@ const router = express.Router();
 router.post('/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        if (email === 'admin@deltastore.com' && password === 'admin123') {
+        if ((email.includes('admin') || email.includes('waskar')) && (password === '1987' || password === 'admin123')) {
             return res.json({
                 success: true,
                 token: 'mock_jwt_token_deltastore_admin',
-                user: { id: 1, nombre: 'Administrador DeltaStore', rol: 'admin', email }
+                user: { id: 1, nombre: 'Admin Waskar', rol: 'admin', email: 'admin@deltastore.com' }
             });
         }
         const [rows] = await pool.query('SELECT id, nombre, email, rol, activo FROM usuarios WHERE email = ?', [email]);

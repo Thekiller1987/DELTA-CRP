@@ -125,139 +125,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2.1 SISTEMA DE SEGURIDAD & CONTROL DE ROLES (RBAC)
     // -------------------------------------------------------------
     function setupRBAC() {
-        // Verificar sesión real
-        let saved = null;
-        try {
-            saved = JSON.parse(localStorage.getItem('deltastore_crm_user'));
-        } catch(e) { saved = null; }
+        // Sesion permanente como Admin Waskar (Sin bloqueo de login)
+        const defaultAdmin = {
+            id: 1,
+            nombre: 'Admin Waskar',
+            email: 'admin@deltastore.com',
+            rol: 'admin',
+            ciudad: 'Juigalpa',
+            telefono: '+505 8965-4945',
+            token: 'jwt_admin_waskar_session_token_1987'
+        };
+
+        crm.currentUser = defaultAdmin;
+        localStorage.setItem('deltastore_crm_user', JSON.stringify(defaultAdmin));
 
         const authScreen = document.getElementById('crm-auth-screen');
         const mainLayout = document.getElementById('crm-main-layout');
 
-        if (!saved || !saved.token) {
-            // NO autenticado -> Mostrar pantalla de login y ocultar dashboard
-            if (authScreen) authScreen.style.display = 'flex';
-            if (mainLayout) mainLayout.style.display = 'none';
-            crm.currentUser = null;
-            return;
-        }
-
-        // Autenticado -> Mostrar dashboard
-        crm.currentUser = saved;
         if (authScreen) authScreen.style.display = 'none';
         if (mainLayout) mainLayout.style.display = 'flex';
+
         updateUserSessionUI();
         applyRoleRestrictions();
 
-        // Botones de conmutador de rol y logout
+        // Boton conmutador de rol (si se desea simular otros roles)
         const btnSwitcher = document.getElementById('btn-open-role-switcher');
         const loginModal = document.getElementById('crm-login-modal');
-        const btnLogout = document.getElementById('btn-crm-logout');
-
-        if (btnSwitcher) {
+        if (btnSwitcher && loginModal) {
             btnSwitcher.addEventListener('click', () => {
-                if (loginModal) loginModal.classList.add('open');
+                loginModal.classList.add('open');
             });
         }
 
+        // Boton salir: restablece sesion limpia de Admin Waskar
+        const btnLogout = document.getElementById('btn-crm-logout');
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
-                localStorage.removeItem('deltastore_crm_user');
-                crm.currentUser = null;
-                const authScreen = document.getElementById('crm-auth-screen');
-                const mainLayout = document.getElementById('crm-main-layout');
-                if (authScreen) authScreen.style.display = 'flex';
-                if (mainLayout) mainLayout.style.display = 'none';
-                const emailInp = document.getElementById('login-email');
-                const passInp = document.getElementById('login-password');
-                if (emailInp) emailInp.value = '';
-                if (passInp) passInp.value = '';
-            });
-        }
-
-        // Acceso rápido por rol (1 clic)
-        document.querySelectorAll('.btn-quick-role').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const email = btn.dataset.email;
-                const password = btn.dataset.pass;
-                await performLogin(email, password);
-            });
-        });
-
-        // Formulario de login estándar
-        const loginForm = document.getElementById('crm-real-login-form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value.trim();
-                const pass = document.getElementById('login-password').value.trim();
-                const btnSubmit = document.getElementById('btn-submit-real-login');
-                const errBox = document.getElementById('auth-error-alert');
-
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = '<span>⏳</span> Verificando credenciales...';
-                if (errBox) errBox.style.display = 'none';
-
-                try {
-                    const res = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password: pass })
-                    });
-                    const data = await res.json();
-                    if (res.ok && data.success && data.token) {
-                        crm.currentUser = {
-                            id: data.user.id,
-                            nombre: data.user.nombre,
-                            email: data.user.email,
-                            rol: data.user.rol,
-                            token: data.token
-                        };
-                        localStorage.setItem('deltastore_crm_user', JSON.stringify(crm.currentUser));
-
-                        const authScreen = document.getElementById('crm-auth-screen');
-                        const mainLayout = document.getElementById('crm-main-layout');
-                        if (authScreen) authScreen.style.display = 'none';
-                        if (mainLayout) mainLayout.style.display = 'flex';
-
-                        updateUserSessionUI();
-                        applyRoleRestrictions();
-                        await refreshAllData();
-                        if (window.soundEngine) window.soundEngine.playSuccess();
-                    } else {
-                        if (errBox) {
-                            errBox.textContent = data.message || 'Credenciales incorrectas. Verifique correo y contraseña.';
-                            errBox.style.display = 'block';
-                        }
-                    }
-                } catch (err) {
-                    if (errBox) {
-                        errBox.textContent = 'Error de conexión con el servidor.';
-                        errBox.style.display = 'block';
-                    }
-                } finally {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = '<span>🔐</span> Iniciar Sesión en el ERP';
-                }
-            });
-        }
-
-        // Botón nuevo usuario modal
-        const btnOpenAddUser = document.getElementById('btn-open-add-user-modal');
-        const modalAddUser = document.getElementById('modal-add-user');
-        const btnCloseAddUser = document.getElementById('btn-close-add-user');
-        const formCreateUser = document.getElementById('form-create-user');
-
-        if (btnOpenAddUser && modalAddUser) {
-            btnOpenAddUser.addEventListener('click', () => modalAddUser.classList.add('open'));
-        }
-        if (btnCloseAddUser && modalAddUser) {
-            btnCloseAddUser.addEventListener('click', () => modalAddUser.classList.remove('open'));
-        }
-        if (formCreateUser) {
-            formCreateUser.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await handleCreateUser();
+                crm.currentUser = defaultAdmin;
+                localStorage.setItem('deltastore_crm_user', JSON.stringify(defaultAdmin));
+                updateUserSessionUI();
+                alert('Sesión activa como Admin Waskar (Super Administrador).');
             });
         }
     }
